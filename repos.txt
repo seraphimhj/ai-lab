@@ -1,0 +1,9 @@
+# 3rd-party repos I reference for study.
+# One git URL per line. Lines starting with '#' are ignored.
+# Run `bash scripts/bootstrap.sh` to clone them all into ./repos/.
+
+git@github.com:karpathy/micrograd.git
+# git@github.com:karpathy/nanoGPT.git
+# git@github.com:karpathy/llm.c.git
+# git@github.com:karpathy/makemore.git
+git@github.com:karpathy/nanoGPT.git

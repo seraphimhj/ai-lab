@@ -1,0 +1,17 @@
+[project]
+name = "ai-lab"
+version = "0.1.0"
+description = "Personal lab for learning deep learning & LLMs"
+requires-python = ">=3.11"
+dependencies = [
+    "jupyterlab>=4.2",
+    "ipykernel>=6.29",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+]
+
+[dependency-groups]
+dev = [
+    "nbstripout>=0.7",
+    "ruff>=0.6",
+]
