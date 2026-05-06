@@ -19,6 +19,14 @@ ai-lab/
 
 ## Setup on a new machine
 
+### System dependencies
+
+```bash
+brew install graphviz
+```
+
+### Project setup
+
 ```bash
 git clone <this-repo> ai-lab && cd ai-lab
 
