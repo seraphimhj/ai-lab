@@ -1,0 +1,224 @@
+{
+  "main": {
+    "id": "1c857dc9130ccd45",
+    "type": "split",
+    "children": [
+      {
+        "id": "8b450da1c9f66d55",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f2869a8778ee9d85",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "raw/papers/2303.08774-GPT-4-Technical-Report.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "2303.08774-GPT-4-Technical-Report"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ce732ff4bc358ba0",
+    "type": "split",
+    "children": [
+      {
+        "id": "c734f07ed4bea1c8",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e0b5bd2c2e44e09c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "6883b08fd429565d",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "a52adc249c9c677d",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 484.5
+  },
+  "right": {
+    "id": "550122011e5d0f03",
+    "type": "split",
+    "children": [
+      {
+        "id": "5c3175e772b1cf62",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "912f2dca210e4c94",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "raw/papers/2210.07316-MTEB-Massive-Text-Embedding-Benchmark.html",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 2210.07316-MTEB-Massive-Text-Embedding-Benchmark"
+            }
+          },
+          {
+            "id": "1de715970c8c4df7",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "raw/papers/2210.07316-MTEB-Massive-Text-Embedding-Benchmark.html",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 2210.07316-MTEB-Massive-Text-Embedding-Benchmark"
+            }
+          },
+          {
+            "id": "16d374e62affe6be",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "db54b15999a6de08",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "7743e06a9e146425",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "raw/papers/2210.07316-MTEB-Massive-Text-Embedding-Benchmark.html",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 2210.07316-MTEB-Massive-Text-Embedding-Benchmark"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false,
+      "obsidian-importer:Open Importer": false
+    }
+  },
+  "active": "f2869a8778ee9d85",
+  "lastOpenFiles": [
+    "raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.pdf",
+    "raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.pdf",
+    "raw/papers/2501.12948-DeepSeek-R1-Incentivizing-Reasoning-Capability-in-LLMs-via-R.pdf",
+    "raw/papers/2412.19437-DeepSeek-V3-Technical-Report.pdf",
+    "raw/papers/2408.03314-Scaling-LLM-Test-Time-Compute-Optimally-can-be-More-Effectiv.pdf",
+    "raw/papers/2407.15831-NV-Retriever-Improving-text-embedding-models-with-effective-hard-negative-mining.pdf",
+    "raw/papers/2407.08608-FlashAttention-3-Fast-and-Accurate-Attention-with-Asynchrony.pdf",
+    "raw/papers/2406.12793-ChatGLM-A-Family-of-Large-Language-Models-from-GLM-130B-to-G.pdf",
+    "raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.pdf",
+    "raw/papers/2405.04434-DeepSeek-V2-A-Strong-Economical-and-Efficient-Mixture-of-Exp.pdf",
+    "raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Query-Focused-Summarization.pdf",
+    "entities/clip.md",
+    "SCHEMA.md",
+    "log.md",
+    "index.md",
+    "papers-reading-list.md",
+    "raw/papers/2407.21783-Llama-3-Herd-of-Models.md",
+    "raw/articles/llm-agent-core-principles-2026.md",
+    "raw/articles/designing-for-agents-2025.md",
+    "raw/articles/claude-code-harness-architecture-2026.md",
+    "raw/articles/attention-algorithm-innovation-2025.md",
+    "raw/transcripts/luo-fuli-interview-zhangxiaojun-2026.md",
+    "raw/papers/2412.19437-DeepSeek-V3-Technical-Report.md",
+    "raw/papers/2210.02414-GLM-130B-An-Open-Bilingual-Pre-trained-Model.md",
+    "raw/papers/2209.07858-Red-Teaming-Language-Models-to-Reduce-Harms-Methods-Scaling.md",
+    "raw/papers/2205.14135-FlashAttention-1.md",
+    "raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement.md",
+    "raw/papers/1810.04805-BERT-Pre-training-Deep-Bidirectional-Transformers.md",
+    "raw/papers/1706.03762-Attention Is All You Need.md",
+    "concepts/context-engineering.md",
+    "concepts/agent-skills.md",
+    "concepts/mcp-model-context-protocol.md",
+    "raw/papers/1909.08593-Fine-Tuning-Language-Models-from-Human-Preferences.md",
+    "raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.md",
+    "raw/papers/2309.16609-Qwen-Technical-Report.md",
+    "raw/papers/2309.12307-LongLoRA-Efficient-Fine-tuning-of-Long-Context-Large-Languag.md"
+  ]
+}
