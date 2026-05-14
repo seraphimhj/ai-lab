@@ -11,12 +11,10 @@
             "id": "f2869a8778ee9d85",
             "type": "leaf",
             "state": {
-              "type": "pdf",
-              "state": {
-                "file": "raw/papers/2303.08774-GPT-4-Technical-Report.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "2303.08774-GPT-4-Technical-Report"
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新标签页"
             }
           }
         ]
@@ -184,17 +182,17 @@
   },
   "active": "f2869a8778ee9d85",
   "lastOpenFiles": [
+    "raw/transcripts/luo-fuli-interview-zhangxiaojun-2026.md",
+    "raw/transcripts",
     "raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.pdf",
+    "raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.html",
     "raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.pdf",
+    "raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.html",
     "raw/papers/2501.12948-DeepSeek-R1-Incentivizing-Reasoning-Capability-in-LLMs-via-R.pdf",
+    "raw/papers/2501.12948-DeepSeek-R1-Incentivizing-Reasoning-Capability-in-LLMs-via-R.html",
     "raw/papers/2412.19437-DeepSeek-V3-Technical-Report.pdf",
+    "raw/papers/2412.19437-DeepSeek-V3-Technical-Report.html",
     "raw/papers/2408.03314-Scaling-LLM-Test-Time-Compute-Optimally-can-be-More-Effectiv.pdf",
-    "raw/papers/2407.15831-NV-Retriever-Improving-text-embedding-models-with-effective-hard-negative-mining.pdf",
-    "raw/papers/2407.08608-FlashAttention-3-Fast-and-Accurate-Attention-with-Asynchrony.pdf",
-    "raw/papers/2406.12793-ChatGLM-A-Family-of-Large-Language-Models-from-GLM-130B-to-G.pdf",
-    "raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.pdf",
-    "raw/papers/2405.04434-DeepSeek-V2-A-Strong-Economical-and-Efficient-Mixture-of-Exp.pdf",
-    "raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Query-Focused-Summarization.pdf",
     "entities/clip.md",
     "SCHEMA.md",
     "log.md",
@@ -205,7 +203,6 @@
     "raw/articles/designing-for-agents-2025.md",
     "raw/articles/claude-code-harness-architecture-2026.md",
     "raw/articles/attention-algorithm-innovation-2025.md",
-    "raw/transcripts/luo-fuli-interview-zhangxiaojun-2026.md",
     "raw/papers/2412.19437-DeepSeek-V3-Technical-Report.md",
     "raw/papers/2210.02414-GLM-130B-An-Open-Bilingual-Pre-trained-Model.md",
     "raw/papers/2209.07858-Red-Teaming-Language-Models-to-Reduce-Harms-Methods-Scaling.md",
