@@ -1,10 +1,10 @@
 ---
 title: LoRA — 低秩微调
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [training, efficiency, fine-tuning]
-sources: [raw/papers/2106.09685-LoRA-Low-Rank-Adaptation-of-Large-Language-Models.md]
+sources: [raw/papers/2106.09685-LoRA-Low-Rank-Adaptation-of-Large-Language-Models.html]
 ---
 
 # LoRA — 低秩微调
@@ -49,7 +49,7 @@ W_new = W_0 + ΔW = W_0 + B × A
 | QLoRA | 将基模型量化到 4-bit，LoRA 权重保持 bf16 |
 | LoRA+ | 对 A 和 B 使用不同学习率 |
 | DoRA | 将权重分解为幅度和方向，LoRA 只调整方向 |
-| LongLoRA | 扩展 LoRA 支持长上下文微调 |
+| LongLoRA | 扩展 LoRA 支持 [[long-context-extension]] [[raw/papers/2309.12307-LongLoRA-Efficient-Fine-tuning-of-Long-Context-Large-Languag.html]] |
 
 ## 应用场景
 

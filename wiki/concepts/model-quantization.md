@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-10
 type: concept
 tags: [efficiency, optimization, deployment]
-sources: [raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Generative-Pre.md, raw/papers/2301.00774-SparseGPT-Massive-Language-Models-Can-Be-Accurately-Pruned-i.md, raw/papers/2306.00978-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression.md]
+sources: [raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Generative-Pre.html, raw/papers/2301.00774-SparseGPT-Massive-Language-Models-Can-Be-Accurately-Pruned-i.html, raw/papers/2306.00978-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression.html]
 ---
 
 # 模型量化

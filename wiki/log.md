@@ -83,3 +83,29 @@
 - Updated concepts: chain-of-thought（推理模型演进+思考强度参数范式）, react-agent（Agent = LLM+Tool+Loop 简化理解）
 - Updated index.md: +3 concepts, page count 66→69
 - Key takeaways: MCP 标准化工具接口、上下文工程是 Agent 工程的核心、推理模型从双模型走向单模型+思考强度参数、Skills 渐进式披露设计
+
+## [2026-05-14] ingest | raw/papers/ 全量论文入库（70+ 篇 → wiki 充实）
+- Source: raw/papers/ 目录 70+ 篇 arxiv 论文 HTML/PDF
+- Created concepts (4):
+  - test-time-compute: 推理时计算缩放（2408.03314 Snell et al.）
+  - long-context-extension: 长上下文扩展技术（YaRN/LongLoRA/Ring Attention）
+  - code-generation: 代码生成模型（StarCoder 2305.06161）
+  - sparse-retrieval: 学习型稀疏检索（SPLADE 2109.10086）
+- Updated entities (3):
+  - gpt-3: 增加 Scaling Laws 验证、InstructGPT/RLHF 后续、交叉链接
+  - llama: 充实 LLaMA 2 对齐细节、LLaMA 3 多模态/工具使用/128K 上下文
+  - deepseek: 充实 V2 MLA KV Cache 压缩数据、V3 训练成本/FP8/MTP、R1 GRPO 细节/Aha Moment/蒸馏版本
+- Updated concepts (7):
+  - flash-attention: 补充 Ring Attention 关联、长上下文基础设施角色
+  - retrieval-augmented-generation: 增加 REALM/RETRO 历史演进、稀疏检索分支
+  - text-embedding: 充实 BGE-M3/NV-Embed/Qwen3-Embedding/Jina v5 详情
+  - scaling-laws: 增加 test-time-compute 交叉链接
+  - rlhf: 充实摘要 RLHF/InstructGPT/HH-RLHF/GRPO 变体细节
+  - constitutional-ai: 增加 Red Teaming 论文关联
+  - lora: 增加 LongLoRA 论文引用和长上下文链接
+- Updated index.md: +4 concepts（test-time-compute, long-context-extension, sparse-retrieval, code-generation）, page count 69→73
+- 论文覆盖情况：
+  - 直接创建新页面：4 篇
+  - 充实已有实体页：~15 篇（GPT-3/LLaMA 1-3/DeepSeek LLM/V2/V3/R1 等）
+  - 充实已有概念页：~30 篇（FlashAttention 1-3, GPTQ/AWQ/SparseGPT, LoRA, RAG/REALM/RETRO, Scaling Laws/Chinchilla, RLHF 系列, Embedding 系列, SPLADE, YaRN/LongLoRA/Ring Attention, StarCoder 等）
+  - 已通过已有页面覆盖（无需新页面）：~25 篇（Attention Is All You Need→transformer-architecture, BERT→bert, ReAct→react-agent, CoT→chain-of-thought, ToT→tree-of-thoughts, Toolformer→tool-use, Self-Instruct→instruction-tuning, DPO→dpo, Mixtral→mixtral, Mistral→mistral-7b, PaLM→palm, GLM→glm, Gemma→gemma, Yi→yi-model, Phi→phi, CLIP→clip, Mamba→mamba, GraphRAG→graph-rag, Self-RAG→self-rag, DPR→dense-passage-retrieval, ColBERT→colbert-retrieval, MoE→mixture-of-experts 等）

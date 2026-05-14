@@ -1,10 +1,10 @@
 ---
 title: 文本嵌入/向量化
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [embedding, representation, retrieval]
-sources: [raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.md, raw/papers/2212.03533-Text-Embeddings-by-Weakly-Supervised-Contrastive-Pre-training.md, raw/papers/2210.07316-MTEB-Massive-Text-Embedding-Benchmark.md]
+sources: [raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.html, raw/papers/2212.03533-Text-Embeddings-by-Weakly-Supervised-Contrastive-Pre-training.html, raw/papers/2210.07316-MTEB-Massive-Text-Embedding-Benchmark.html, raw/papers/2402.03216-M3-Embedding-Multi-Linguality-Multi-Functionality-Multi-Granularity-Text-Embeddi.html, raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.html, raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.html, raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.html]
 ---
 
 # 文本嵌入/向量化
@@ -49,10 +49,26 @@ sources: [raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-
 | 模型 | 特点 |
 |------|------|
 | OpenAI text-embedding-3 | 大规模商用，支持降维 |
-| BGE 系列 | 开源，中英文均强 |
-| GTE 系列 | 多语言，长文本支持 |
-| M3 Embedding | 多功能（检索/STS/聚类） |
-| NV-Embed | 有效 hard negative mining |
+| BGE-M3 | 开源，Dense+Sparse+ColBERT 三合一 [[raw/papers/2402.03216-M3-Embedding-Multi-Linguality-Multi-Functionality-Multi-Granularity-Text-Embeddi.html]] |
+| GTE 系列 | [[alibaba-qwen]] 出品，多语言长文本 |
+| NV-Embed v1/v2 | LLM-based embedding，effective hard negative mining [[raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.html]] |
+| Qwen3-Embedding | 基于 Qwen3 基座，MTEB 75.22 登顶 [[raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.html]] |
+| Jina Embeddings v5 | Task-Targeted Distillation，任务自适应嵌入 [[raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.html]] |
+
+### BGE-M3（2024）[[raw/papers/2402.03216-M3-Embedding-Multi-Linguality-Multi-Functionality-Multi-Granularity-Text-Embeddi.html]]
+
+M3 = Multi-Linguality + Multi-Functionality + Multi-Granularity：
+- **多语言**：100+ 语言统一向量空间
+- **多功能**：单模型同时输出 Dense / Sparse / ColBERT 三种表示
+- **多粒度**：支持 8192 token 长文本
+- 训练创新：Self-Knowledge Distillation（三种表示互为教师）
+
+### NV-Embed（2024）[[raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.html]]
+
+基于 LLM（Mistral 7B）作为 embedding 骨干：
+- Latent Attention Layer 代替平均池化
+- 两阶段对比学习：Instruct→Hard Negative
+- MTEB 56 任务上首个 LLM-based 模型超越所有专用模型
 
 ## 评估基准
 

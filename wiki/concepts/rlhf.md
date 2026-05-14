@@ -1,10 +1,10 @@
 ---
 title: RLHF — 基于人类反馈的强化学习
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [training, alignment, reinforcement-learning]
-sources: [raw/papers/1909.08593-Fine-Tuning-Language-Models-from-Human-Preferences.md, raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-f.md, raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement.md]
+sources: [raw/papers/1909.08593-Fine-Tuning-Language-Models-from-Human-Preferences.html, raw/papers/2009.01325-Learning-to-summarize-from-human-feedback.html, raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-f.html, raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement.html]
 ---
 
 # RLHF — 基于人类反馈的强化学习
@@ -40,9 +40,10 @@ RLHF 训练分为三个阶段：
 
 | 变体 | 核心思想 | 代表工作 |
 |------|---------|---------|
-| InstructGPT | 三阶段 RLHF 流程 | OpenAI |
-| ChatGPT | 基于 InstructGPT 的对话模型 | OpenAI |
-| HH-RLHF | 同时优化 helpful & harmless | Anthropic |
+| 摘要 RLHF | 首次大规模验证 RLHF 对文本生成质量的提升 | OpenAI [[raw/papers/2009.01325-Learning-to-summarize-from-human-feedback.html]] |
+| InstructGPT | 三阶段 RLHF 用于指令遵循，让 1.3B 模型超越 175B [[raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-f.html]] | OpenAI |
+| HH-RLHF | 同时优化 helpful & harmless 双目标 [[raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement.html]] | Anthropic |
+| GRPO | 无需 Critic Model 的组级 RL，[[deepseek]] R1 使用 | DeepSeek |
 
 ## 局限性
 

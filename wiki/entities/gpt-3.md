@@ -1,10 +1,10 @@
 ---
 title: GPT-3
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: entity
 tags: [model, architecture, nlp, llm]
-sources: [raw/papers/2005.14165-Language-Models-are-Few-Shot-Learners.md]
+sources: [raw/papers/2005.14165-Language-Models-are-Few-Shot-Learners.html]
 ---
 
 # GPT-3
@@ -51,6 +51,10 @@ GPT-3 的训练数据来自多个来源的混合语料，总计约 3000 亿 Toke
 - 部分任务上 few-shot 学习仍有困难
 - 高昂的计算成本限制了可复现性
 
+## Scaling Laws 验证
+
+GPT-3 的不同规模变体系统验证了 [[scaling-laws]]：模型性能随参数量呈幂律关系平滑提升。这一发现为后续 Chinchilla 等研究（更优数据/参数比例）奠定了经验基础。[[raw/papers/2001.08361-Scaling-Laws-Neural-Language-Models.html]]
+
 ## 后续影响
 
-GPT-3 奠定了 [[gpt-4]] 的技术基础，其 in-context learning 能力直接催生了 ChatGPT 的产品化。175B 参数的规模也推动了 [[llama]] 等开源模型在类似规模上的追赶。
+GPT-3 奠定了 [[gpt-4]] 的技术基础，其 [[in-context-learning]] 能力直接催生了 ChatGPT 的产品化。175B 参数的规模也推动了 [[llama]] 等开源模型在类似规模上的追赶。InstructGPT 后续通过 [[rlhf]] 将 GPT-3 对齐到人类偏好，形成了预训练→SFT→RLHF 的三阶段训练范式。[[raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-f.html]]

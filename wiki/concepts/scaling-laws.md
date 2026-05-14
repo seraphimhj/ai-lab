@@ -1,10 +1,10 @@
 ---
 title: 缩放定律
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [scaling, training, fundamentals]
-sources: [raw/papers/2001.08361-Scaling-Laws-Neural-Language-Models.md, raw/papers/2203.15556-Chinchilla-Training-Compute-Optimal-LLMs.md]
+sources: [raw/papers/2001.08361-Scaling-Laws-Neural-Language-Models.html, raw/papers/2203.15556-Chinchilla-Training-Compute-Optimal-LLMs.html]
 ---
 
 # 缩放定律
@@ -71,6 +71,7 @@ DeepMind 修正了 Kaplan 的结论：
 
 ## 相关概念
 
-- [[mixture-of-experts]] — 新的缩放维度
+- [[mixture-of-experts]] — 新的缩放维度（稀疏参数）
+- [[test-time-compute]] — 推理时计算缩放，与预训练缩放互补
 - [[instruction-tuning]] — 缩放定律在指令微调阶段的体现
 - [[model-quantization]] — 推理阶段的缩放优化

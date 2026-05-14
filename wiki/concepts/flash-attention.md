@@ -1,10 +1,10 @@
 ---
 title: FlashAttention — 高效注意力计算
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [efficiency, optimization, architecture]
-sources: [raw/papers/2205.14135-FlashAttention-1.md, raw/papers/2307.08691-FlashAttention-2.md, raw/papers/2407.08608-FlashAttention-3-Fast-and-Accurate-Attention-with-Asynchrony.md]
+sources: [raw/papers/2205.14135-FlashAttention-1.html, raw/papers/2307.08691-FlashAttention-2.html, raw/papers/2407.08608-FlashAttention-3-Fast-and-Accurate-Attention-with-Asynchrony.html]
 ---
 
 # FlashAttention — 高效注意力计算
@@ -51,9 +51,10 @@ sources: [raw/papers/2205.14135-FlashAttention-1.md, raw/papers/2307.08691-Flash
 ## 影响与地位
 
 FlashAttention 是现代 LLM 训练的基石：
-- 几乎所有主流模型都使用 FlashAttention
-- 使得长序列训练成为可能
+- 几乎所有主流模型（[[llama]]、[[deepseek]]、[[qwen]]）都使用 FlashAttention
+- 使得长序列训练成为可能，是 [[long-context-extension]] 的基础设施
 - 催生了更多 IO-aware 算法的研究
+- Ring Attention 将 FlashAttention 的 blockwise 思想扩展到多设备分布式长序列训练
 
 ## 相关概念
 

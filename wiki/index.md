@@ -2,7 +2,7 @@
 
 > Content catalog. Every wiki page listed under its type with a one-line summary.
 > Read this first to find relevant pages for any query.
-> Last updated: 2026-05-14 | Total pages: 69 (28 entities + 34 concepts + 7 comparisons)
+> Last updated: 2026-05-14 | Total pages: 73 (28 entities + 38 concepts + 7 comparisons)
 
 ## Entities
 
@@ -74,6 +74,8 @@
 - [[model-quantization]] — 模型量化 (GPTQ/AWQ/SparseGPT)，推理加速显存优化
 - [[mixture-of-experts]] — MoE 稀疏专家混合，参数量/计算量解耦
 - [[scaling-laws]] — 缩放定律 (Kaplan + Chinchilla)，指导模型规模与数据量关系
+- [[test-time-compute]] — 推理时计算缩放，小模型+额外推理计算可超越 14× 大模型
+- [[long-context-extension]] — 长上下文扩展（YaRN/LongLoRA/Ring Attention），4K→128K+
 - [[linear-attention]] — 线性注意力机制：O(L) 复杂度 vs O(L²) Softmax Attention
 - [[hybrid-attention]] — 混合注意力架构：Linear 层省 KV Cache + Full 层保表达力
 - [[sparse-attention]] — 稀疏注意力机制：DeepSeek 路线，Indexer 选 Top-K Token
@@ -82,6 +84,7 @@
 - [[retrieval-augmented-generation]] — RAG 检索增强生成，外部知识注入 LLM
 - [[dense-passage-retrieval]] — DPR 密集段落检索，双编码器检索范式
 - [[colbert-retrieval]] — ColBERT Late Interaction，token 级细粒度匹配
+- [[sparse-retrieval]] — 学习型稀疏检索（SPLADE），词汇扩展+倒排索引
 - [[self-rag]] — Self-RAG 自主判断检索需求，按需 RAG
 - [[graph-rag]] — GraphRAG 知识图谱增强 RAG，支持全局问题回答
 
@@ -93,7 +96,10 @@
 - [[context-engineering]] — 上下文工程，一切高级能力的本质都在上下文填充
 
 ### Embedding
-- [[text-embedding]] — 文本嵌入/向量化，Sentence-BERT → E5 → MTEB 标准化评测
+- [[text-embedding]] — 文本嵌入/向量化，Sentence-BERT → E5 → BGE-M3 → Qwen3-Embedding
+
+### 代码生成
+- [[code-generation]] — 代码模型（StarCoder/CodeLlama/DeepSeek-Coder），FIM + 仓库级上下文
 
 ## Comparisons
 
