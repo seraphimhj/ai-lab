@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qwen3 Embedding Advancing Text Embedding and Reranking Through Foundation Models</title>
+<link rel="canonical" href="https://arxiv.org/abs/2506.05176">
+
+<style>
+body { max-width: 900px; margin: 0 auto; padding: 20px; }
+.ltx_page_content { max-width: 100%; }
+</style>
+</head>
+<body>
+<article class="ltx_document ltx_authors_1line">
+<h1 class="ltx_title ltx_title_document">Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models</h1>
+<div class="ltx_authors">
+<span class="ltx_creator ltx_role_author">
+<span class="ltx_personname">
+
+
+<br class="ltx_break">
+Yanzhao Zhang*  
+Mingxin Li*  
+Dingkun Long*  
+Xin Zhang*  
+
+<br class="ltx_break">
+Huan Lin  
+Baosong Yang  
+Pengjun Xie  
+An Yang  
+
+<br class="ltx_break">
+Dayiheng Liu  
+Junyang Lin  
+Fei Huang  
+Jingren Zhou  
+
+<br class="ltx_break">
+<br class="ltx_break">
+<span class="ltx_text ltx_font_bold">Tongyi Lab  Alibaba Group</span>
+</span></span>
+</div>
+
+<div class="ltx_abstract">
+<h6 class="ltx_title ltx_title_abstract">Abstract</h6>
+<p class="ltx_p">In this work, we introduce the Qwen3 Embedding series, a significant advancement over its predecessor, the GTE-Qwen series, in text embedding and reranking capabilities, built upon the Qwen3 foundation models. Leveraging the Qwen3 LLMs’ robust capabilities in multilingual text understanding and generation, our innovative multi-stage training pipeline combines large-scale unsupervised pre-training with supervised fine-tuning on high-quality datasets. Effective model merging strategies further ensure the robustness and adaptability of the Qwen3 Embedding series. During the training process, the Qwen3 LLMs serve not only as backbone models but also play a crucial role in synthesizing high-quality, rich, and diverse training data across multiple domains and languages, thus enhancing the training pipeline. The Qwen3 Embedding series offers a spectrum of model sizes (0.6B, 4B, 8B) for both embedding and reranking tasks, addressing diverse deployment scenarios where users can optimize for either efficiency or effectiveness.
+Empirical evaluations demonstrate that the Qwen3 Embedding series achieves state-of-the-art results across diverse benchmarks. Notably, it excels on the multilingual evaluation benchmark MTEB for text embedding, as well as in various retrieval tasks, including code retrieval, cross-lingual retrieval and multilingual retrieval. To facilitate reproducibility and promote community-driven research and development, the Qwen3 Embedding models are publicly available under the Apache 2.0 license.</p>
+</div>
+<div id="p1" class="ltx_para">
+<table class="ltx_tabular ltx_centering ltx_guessed_headers ltx_align_middle">
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row"><span class="ltx_text" style="position:relative; bottom:-1.5pt;"><img src="/html/2506.05176/assets/x1.png" id="g1" class="ltx_graphics ltx_img_square" width="21" height="20" alt="[Uncaptioned image]"></span></th>
+<td class="ltx_td ltx_align_left"><a target="_blank" href="https://huggingface.co/Qwen" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://huggingface.co/Qwen</a></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row"><span class="ltx_text" style="position:relative; bottom:-1.5pt;"><img src="/html/2506.05176/assets/x2.png" id="g2" class="ltx_graphics ltx_img_landscape" width="34" height="20" alt="[Uncaptioned image]"></span></th>
+<td class="ltx_td ltx_align_left"><a target="_blank" href="https://modelscope.cn/organization/qwen" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://modelscope.cn/organization/qwen</a></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row"><span class="ltx_text" style="position:relative; bottom:-1.5pt;"><img src="/html/2506.05176/assets/x3.png" id="g3" class="ltx_graphics ltx_img_square" width="20" height="20" alt="[Uncaptioned image]"></span></th>
+<td class="ltx_td ltx_align_left"><a target="_blank" href="https://github.com/QwenLM/Qwen3-Embedding" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://github.com/QwenLM/Qwen3-Embedding</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<span id="footnote1" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">†</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">†</sup><sup class="ltx_sup"><span class="ltx_text ltx_font_italic">∗</span></sup> Equal contribution</span></span></span>
+<section id="S1" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">1 </span>Introduction</h2>
+
+<div id="S1.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">Text embedding and reranking are fundamental components in numerous natural language processing and information retrieval applications, including web search, question answering, recommendation systems, and beyond <cite class="ltx_cite ltx_citemacro_citep">(Karpukhin et al., <a href="#bib.bib6" title="" class="ltx_ref">2020</a>; Huang et al., <a href="#bib.bib4" title="" class="ltx_ref">2020</a>; Zhao et al., <a href="#bib.bib27" title="" class="ltx_ref">2023</a>; <a href="#bib.bib26" title="" class="ltx_ref">2024</a>)</cite>. High-quality embeddings enable models to capture semantic relationships between texts, while effective reranking mechanisms ensure that the most relevant results are prioritized. Recently, emerging application paradigms such as Retrieval-Augmented Generation (RAG) and agent systems, driven by the advancement of large language models (e.g., Qwen3 <cite class="ltx_cite ltx_citemacro_citep">(Yang et al., <a href="#bib.bib23" title="" class="ltx_ref">2025</a>)</cite>, GPT-4o <cite class="ltx_cite ltx_citemacro_citep">(Hurst et al., <a href="#bib.bib5" title="" class="ltx_ref">2024</a>)</cite>), have introduced new requirements and challenges for text embedding and reranking, both in terms of model training paradigms and application scenarios. Despite significant advancements, training embedding and reranking models that perform well in scalability, contextual understanding, and alignment with specific downstream tasks remains challenging.</p>
+</div>
+<div id="S1.p2" class="ltx_para ltx_noindent">
+<p class="ltx_p">The emergence of large language models (LLMs) has significantly advanced the development of text embedding and reranking models. Prior to the introduction of LLMs, the predominant approach involved using encoder-only pretrained language models like BERT as the foundational model for training <cite class="ltx_cite ltx_citemacro_citep">(Reimers &amp; Gurevych, <a href="#bib.bib17" title="" class="ltx_ref">2019</a>)</cite>. The richer world knowledge, text understanding, and reasoning abilities inherent in LLMs have led to further enhancements in models trained on these architectures. Additionally, there has been considerable research facilitating the integration of LLMs into processes such as training data synthesis and quality data filtering <cite class="ltx_cite ltx_citemacro_citep">(Wang et al., <a href="#bib.bib20" title="" class="ltx_ref">2024</a>; Lee et al., <a href="#bib.bib7" title="" class="ltx_ref">2024</a>; <a href="#bib.bib9" title="" class="ltx_ref">2025b</a>)</cite>. The fundamental characteristics of LLMs have also inspired the introduction of new training paradigms. For instance, during the embedding model training process, incorporating differentiated tasks across aspects such as instruction type, domain, and language has yielded improved performance in downstream tasks <cite class="ltx_cite ltx_citemacro_citep">(Su et al., <a href="#bib.bib18" title="" class="ltx_ref">2023</a>)</cite>. Similarly, for reranking model training, advancements have been realized through both zero-shot methods based on user prompts and approaches combining supervised fine-tuning <cite class="ltx_cite ltx_citemacro_citep">(Ma et al., <a href="#bib.bib12" title="" class="ltx_ref">2023</a>; Pradeep et al., <a href="#bib.bib16" title="" class="ltx_ref">2023</a>; Zhang et al., <a href="#bib.bib24" title="" class="ltx_ref">2024a</a>; Zhuang et al., <a href="#bib.bib28" title="" class="ltx_ref">2024</a>)</cite>.</p>
+</div>
+<div id="S1.p3" class="ltx_para ltx_noindent">
+<p class="ltx_p">In this work, we introduce the Qwen3 Embedding series models, which are constructed on top of the Qwen3 foundation models. The Qwen3 foundation has simultaneously released base and instruct model versions, and we exploit the robust multilingual text understanding and generation capabilities of these models to fully realize their potential in training embedding and reranking models. To train the embedding models, we implement a multi-stage training pipeline that involves large-scale unsupervised pre-training followed by supervised fine tuning on high-quality datasets. We also employ model merging with various model checkpoints to enhance robustness and generalization. The Qwen3 instruct model allows for efficient synthesis of a vast, high-quality, multilingual, and multi-task text relevance dataset. This synthetic data is utilized in the initial unsupervised training stage, while a subset of high-quality, small-scale data is selected for the second stage of supervised training. For the reranking models, we adopt a two-stage training scheme in a similar manner, consisting of high-quality supervised fine tuning and a model merging stage. Based on different sizes of the Qwen3 backbone models (including 0.6B, 4B, and 8B), we ultimately trained three text embedding models and three text reranking models. To facilitate their application in downstream tasks, the Qwen3 Embedding series supports several practical features, such as flexible dimension representation for embedding models and customizable instructions for both embedding and reranking models.</p>
+</div>
+<div id="S1.p4" class="ltx_para ltx_noindent">
+<p class="ltx_p">We evaluate the Qwen3 Embedding series across a comprehensive set of benchmarks spanning multiple tasks and domains. Experimental results demonstrate that our embedding and reranking models achieve state-of-the-art performance, performing competitively against leading proprietary models in several retrieval tasks. For example, the flagship model Qwen3-8B-Embedding attains a score of 70.58 on the MTEB Multilingual benchmark <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite> and 80.68 on the MTEB Code benchmark <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>, surpassing the previous state-of-the-art proprietary embedding model, Gemini-Embedding <cite class="ltx_cite ltx_citemacro_citep">(Lee et al., <a href="#bib.bib9" title="" class="ltx_ref">2025b</a>)</cite>. Moreover, our reranking model delivers competitive results across a range of retrieval tasks. The Qwen3-Reranker-0.6B model exceeds previously top-performing models in numerous retrieval tasks, while the larger Qwen3-Reranker-8B model demonstrates even superior performance, improving ranking results by 3.0 points over the 0.6B model across multiple tasks. Furthermore, we include a constructive ablation study to elucidate the key factors contributing to the superior performance of the Qwen3 Embedding series, providing insights into its effectiveness.</p>
+</div>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">In the following sections, we describe the design of the model architecture, detail the training procedures, present the experimental results for both the embedding and reranking models of the Qwen3 Embedding Series, and conclude this technical report by summarizing the key findings and outlining potential directions for future research.</p>
+</div>
+<figure id="S1.F1" class="ltx_figure"><img src="/html/2506.05176/assets/figures/q3e-model-arc.png" id="S1.F1.g1" class="ltx_graphics ltx_centering ltx_img_landscape" width="538" height="168" alt="Refer to caption">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 1: </span>Model architecture of Qwen3-Embedding (left) and Qwen3-Reranker (right).</figcaption>
+</figure>
+</section>
+<section id="S2" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">2 </span>Model Architecture</h2>
+
+<div id="S2.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">The core idea behind embedding and reranking models is to evaluate relevance in a task-aware manner. Given a query <math id="S2.p1.m1" class="ltx_Math" alttext="q" display="inline"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math> and a document <math id="S2.p1.m2" class="ltx_Math" alttext="d" display="inline"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>, embedding and reranking models assess their relevance based on a similarity criterion defined by instruction <math id="S2.p1.m3" class="ltx_Math" alttext="I" display="inline"><semantics><mi>I</mi><annotation encoding="application/x-tex">I</annotation></semantics></math>. To enable the models for task-aware relevance estimation, training data is often organized as <math id="S2.p1.m4" class="ltx_Math" alttext="\{I_{i},q_{i},d_{i}^{+},d_{i,1}^{-},\cdots,d_{i,n}^{-}\}" display="inline"><semantics><mrow><mo stretchy="false">{</mo><msub><mi>I</mi><mi>i</mi></msub><mo>,</mo><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><mo>,</mo><msubsup><mi>d</mi><mrow><mi>i</mi><mo>,</mo><mn>1</mn></mrow><mo>−</mo></msubsup><mo>,</mo><mi mathvariant="normal">⋯</mi><mo>,</mo><msubsup><mi>d</mi><mrow><mi>i</mi><mo>,</mo><mi>n</mi></mrow><mo>−</mo></msubsup><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">\{I_{i},q_{i},d_{i}^{+},d_{i,1}^{-},\cdots,d_{i,n}^{-}\}</annotation></semantics></math>, where <math id="S2.p1.m5" class="ltx_Math" alttext="d_{i}^{+}" display="inline"><semantics><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><annotation encoding="application/x-tex">d_{i}^{+}</annotation></semantics></math> represents a positive (relevant) document for query <math id="S2.p1.m6" class="ltx_Math" alttext="q_{i}" display="inline"><semantics><msub><mi>q</mi><mi>i</mi></msub><annotation encoding="application/x-tex">q_{i}</annotation></semantics></math>, and <math id="S2.p1.m7" class="ltx_Math" alttext="d_{i,j}^{-}" display="inline"><semantics><msubsup><mi>d</mi><mrow><mi>i</mi><mo>,</mo><mi>j</mi></mrow><mo>−</mo></msubsup><annotation encoding="application/x-tex">d_{i,j}^{-}</annotation></semantics></math> are negative (irrelevant) documents. Training the model on diverse text pairs broadens its applicability to a range of downstream tasks, including retrieval, semantic textual similarity, classification, and clustering.</p>
+</div>
+<section id="S2.SS0.SSS0.Px1" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Architecture</h4>
+
+<div id="S2.SS0.SSS0.Px1.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">The Qwen3 embedding and reranking models are built on the dense version of Qwen3 foundation models and are available in three sizes: 0.6B, 4B, and 8B parameters. We initialize these models using the Qwen3 foundation models to leverage their capabilities in text modeling and instruction following. The model layers, hidden size, and context length for each model configuration are detailed in Table <a href="#S2.T1" title="Table 1 ‣ Reranking Models ‣ 2 Model Architecture ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">1</span></a>.</p>
+</div>
+</section>
+<section id="S2.SS0.SSS0.Px2" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Embedding Models</h4>
+
+<div id="S2.SS0.SSS0.Px2.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">For text embeddings, we utilize LLMs with causal attention, appending an <code class="ltx_verbatim ltx_font_typewriter">[EOS]</code> token at the end of the input sequence. The final embedding is derived from the hidden state of the last layer corresponding to this <code class="ltx_verbatim ltx_font_typewriter">[EOS]</code> token.</p>
+</div>
+<div id="S2.SS0.SSS0.Px2.p2" class="ltx_para ltx_noindent">
+<p class="ltx_p">To ensure embeddings follow instructions during downstream tasks, we concatenate the instruction and the query into a single input context, while leaving the document unchanged before processing with LLMs. The input format for queries is as follows:</p>
+</div>
+<div id="S2.SS0.SSS0.Px2.p3" class="ltx_para ltx_noindent">
+<span class="ltx_inline-block"><svg id="S2.SS0.SSS0.Px2.p3.pic1" class="ltx_picture" height="56.72" overflow="visible" version="1.1" viewBox="0 0 600 56.72" width="600"><g transform="translate(0,56.72) matrix(1 0 0 -1 0 0)" fill="#000000" stroke="#000000" stroke-width="0.4pt"><g fill="#B3B3B3" fill-opacity="1.0"><path d="M 0 3.32 L 0 53.4 C 0 55.23 1.49 56.72 3.32 56.72 L 596.68 56.72 C 598.51 56.72 600 55.23 600 53.4 L 600 3.32 C 600 1.49 598.51 0 596.68 0 L 3.32 0 C 1.49 0 0 1.49 0 3.32 Z" style="stroke:none"></path></g><g fill="#ECECEC" fill-opacity="1.0"><path d="M 0.55 3.32 L 0.55 53.4 C 0.55 54.93 1.79 56.17 3.32 56.17 L 596.68 56.17 C 598.21 56.17 599.45 54.93 599.45 53.4 L 599.45 3.32 C 599.45 1.79 598.21 0.55 596.68 0.55 L 3.32 0.55 C 1.79 0.55 0.55 1.79 0.55 3.32 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 10.03 30.09)"><foreignObject width="579.95" height="36.67" transform="matrix(1 0 0 -1 0 16.6)" overflow="visible" style="--fo_width :41.91em;--fo_height:1.2em;--fo_depth :1.45em;" color="#000000"><span class="ltx_foreignobject_container"><span class="ltx_foreignobject_content">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" style="width:39.92em;">
+<span class="ltx_p"><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:0.0pt;"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;"><span class="ltx_text ltx_inline-block" style="width:469.8pt;">{Instruction} {Query}&lt;|endoftext|&gt;</span></span></span>
+</span></span></span></foreignObject></g></g></svg></span>
+</div>
+</section>
+<section id="S2.SS0.SSS0.Px3" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Reranking Models</h4>
+
+<div id="S2.SS0.SSS0.Px3.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">To more accurately evaluate text similarity, we employ LLMs for point-wise reranking within a single context. Similar to the embedding model, to enable instruction-following capability, we include the instruction in the input context. We use the LLM chat template and frame the similarity assessment task as a binary classification problem. The input to LLMs adheres to the template shown below:</p>
+</div>
+<div id="S2.SS0.SSS0.Px3.p2" class="ltx_para ltx_noindent">
+<span class="ltx_inline-block"><svg id="S2.SS0.SSS0.Px3.p2.pic1" class="ltx_picture" height="56.72" overflow="visible" version="1.1" viewBox="0 0 600 56.72" width="600"><g transform="translate(0,56.72) matrix(1 0 0 -1 0 0)" fill="#000000" stroke="#000000" stroke-width="0.4pt"><g fill="#B3B3B3" fill-opacity="1.0"><path d="M 0 3.32 L 0 53.4 C 0 55.23 1.49 56.72 3.32 56.72 L 596.68 56.72 C 598.51 56.72 600 55.23 600 53.4 L 600 3.32 C 600 1.49 598.51 0 596.68 0 L 3.32 0 C 1.49 0 0 1.49 0 3.32 Z" style="stroke:none"></path></g><g fill="#ECECEC" fill-opacity="1.0"><path d="M 0.55 3.32 L 0.55 53.4 C 0.55 54.93 1.79 56.17 3.32 56.17 L 596.68 56.17 C 598.21 56.17 599.45 54.93 599.45 53.4 L 599.45 3.32 C 599.45 1.79 598.21 0.55 596.68 0.55 L 3.32 0.55 C 1.79 0.55 0.55 1.79 0.55 3.32 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 10.03 30.09)"><foreignObject width="579.95" height="36.67" transform="matrix(1 0 0 -1 0 16.6)" overflow="visible" style="--fo_width :41.91em;--fo_height:1.2em;--fo_depth :1.45em;" color="#000000"><span class="ltx_foreignobject_container"><span class="ltx_foreignobject_content">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" style="width:39.92em;">
+<span class="ltx_p"><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:0.0pt;"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;"><span class="ltx_text ltx_inline-block" style="width:469.8pt;">&lt;|im_start|&gt;system</span></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be "yes" or "no".&lt;|im_end|&gt;</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;|im_start|&gt;user</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;Instruct&gt;: {Instruction}</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;Query&gt;: {Query}</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;Document&gt;: {Document}&lt;|im_end|&gt;</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;|im_start|&gt;assistant</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;think&gt;\n\n&lt;/think&gt;\n\n</span></span>
+</span></span></span></foreignObject></g></g></svg></span>
+</div>
+<div id="S2.SS0.SSS0.Px3.p3" class="ltx_para ltx_noindent">
+<p class="ltx_p">To calculate the relevance score based on the given input, we assess the likelihood of the next token being ”yes” or ”no.” This is expressed mathematically as follows:</p>
+<table id="S2.Ex1" class="ltx_equation ltx_eqn_table">
+
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S2.Ex1.m1" class="ltx_Math" alttext="\textrm{score}(q,d)=\frac{e^{P(\text{yes}|I,q,d)}}{e^{P(\text{yes}|I,q,d)}+e^{P(\text{no}|I,q,d)}}" display="block"><semantics><mrow><mrow><mtext>score</mtext><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><mi>q</mi><mo>,</mo><mi>d</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><msup><mi>e</mi><mrow><mi>P</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><mrow><mtext>yes</mtext><mo fence="false">|</mo><mrow><mi>I</mi><mo>,</mo><mi>q</mi><mo>,</mo><mi>d</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></msup><mrow><msup><mi>e</mi><mrow><mi>P</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><mrow><mtext>yes</mtext><mo fence="false">|</mo><mrow><mi>I</mi><mo>,</mo><mi>q</mi><mo>,</mo><mi>d</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></msup><mo>+</mo><msup><mi>e</mi><mrow><mi>P</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><mrow><mtext>no</mtext><mo fence="false">|</mo><mrow><mi>I</mi><mo>,</mo><mi>q</mi><mo>,</mo><mi>d</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></msup></mrow></mfrac></mrow><annotation encoding="application/x-tex">\textrm{score}(q,d)=\frac{e^{P(\text{yes}|I,q,d)}}{e^{P(\text{yes}|I,q,d)}+e^{P(\text{no}|I,q,d)}}</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td>
+</tr></tbody>
+</table>
+</div>
+<figure id="S2.T1" class="ltx_table">
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer" style="width:411.9pt;height:124.5pt;vertical-align:-124.5pt;"><span class="ltx_transformed_inner" style="transform:translate(-53.9pt,0.0pt) scale(0.792736967280067,0.792736967280067) ;">
+<table class="ltx_tabular ltx_guessed_headers ltx_align_middle">
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_tt">Model Type</th>
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_r ltx_border_tt">Models</th>
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row ltx_border_r ltx_border_tt">Size</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_tt">Layers</th>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Sequence</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Length</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Embedding</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Dimension</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">MRL</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Support</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Instruction</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Aware</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_t" rowspan="3">Text Embedding</th>
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_r ltx_border_t">Qwen3-Embedding-0.6B</th>
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row ltx_border_r ltx_border_t">0.6B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_t">28</th>
+<td class="ltx_td ltx_align_center ltx_border_t">32K</td>
+<td class="ltx_td ltx_align_center ltx_border_t">1024</td>
+<td class="ltx_td ltx_align_center ltx_border_t">Yes</td>
+<td class="ltx_td ltx_align_center ltx_border_t">Yes</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_r">Qwen3-Embedding-4B</th>
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row ltx_border_r">4B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row">36</th>
+<td class="ltx_td ltx_align_center">32K</td>
+<td class="ltx_td ltx_align_center">2560</td>
+<td class="ltx_td ltx_align_center">Yes</td>
+<td class="ltx_td ltx_align_center">Yes</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_r">Qwen3-Embedding-8B</th>
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row ltx_border_r">8B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row">36</th>
+<td class="ltx_td ltx_align_center">32K</td>
+<td class="ltx_td ltx_align_center">4096</td>
+<td class="ltx_td ltx_align_center">Yes</td>
+<td class="ltx_td ltx_align_center">Yes</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_bb ltx_border_r ltx_border_t" rowspan="4">Text Reranking</th>
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_r ltx_border_t">Qwen3-Reranker-0.6B</th>
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row ltx_border_r ltx_border_t">0.6B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_t">28</th>
+<td class="ltx_td ltx_align_center ltx_border_t">32K</td>
+<td class="ltx_td ltx_align_center ltx_border_t">-</td>
+<td class="ltx_td ltx_align_center ltx_border_t">-</td>
+<td class="ltx_td ltx_align_center ltx_border_t">Yes</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_r">Qwen3-Reranker-4B</th>
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row ltx_border_r">4B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row">36</th>
+<td class="ltx_td ltx_align_center">32K</td>
+<td class="ltx_td ltx_align_center">-</td>
+<td class="ltx_td ltx_align_center">-</td>
+<td class="ltx_td ltx_align_center">Yes</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_bb ltx_border_r">Qwen3-Reranker-8B</th>
+<th class="ltx_td ltx_align_right ltx_th ltx_th_row ltx_border_bb ltx_border_r">8B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_bb">36</th>
+<td class="ltx_td ltx_align_center ltx_border_bb">32K</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">-</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">-</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">Yes</td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 1: </span>Model architecture of Qwen3 Embedding models. “MRL Support” indicates whether the embedding model supports custom dimensions for the final embedding. “Instruction Aware” notes whether the embedding or reranker model supports customizing the input instruction according to different tasks.</figcaption>
+</figure>
+<figure id="S2.F2" class="ltx_figure"><img src="/html/2506.05176/assets/figures/q3e-train-pipeline.png" id="S2.F2.g1" class="ltx_graphics ltx_centering ltx_img_landscape" width="598" height="134" alt="Refer to caption">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 2: </span>Training pipeline of Qwen3 Embedding and Reranking models.</figcaption>
+</figure>
+</section>
+</section>
+<section id="S3" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">3 </span>Models Training</h2>
+
+<div id="S3.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">In this section, we describe the multi-stage training pipeline adopted and present the key elements of this training recipe, including training objective, training data synthesis, and filtering of high-quality training data.</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">3.1 </span>Training Objective</h3>
+
+<div id="S3.SS1.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">Before introducing our training pipeline, we first outline the optimized loss functions used for the embedding and reranking models during the training process. For the embedding model, we utilize an improved contrastive loss based on the InfoNCE framework <cite class="ltx_cite ltx_citemacro_citep">(Oord et al., <a href="#bib.bib15" title="" class="ltx_ref">2018</a>)</cite>. Given a batch of <math id="S3.SS1.p1.m1" class="ltx_Math" alttext="N" display="inline"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math> training instances, the loss is defined as:</p>
+<table id="S3.E1" class="ltx_equation ltx_eqn_table">
+
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S3.E1.m1" class="ltx_Math" alttext="L_{\textrm{embedding}}=-\frac{1}{N}\sum_{i}^{N}\log\frac{e^{(s(q_{i},d_{i}^{+})/\tau)}}{Z_{i}}," display="block"><semantics><mrow><mrow><msub><mi>L</mi><mtext>embedding</mtext></msub><mo>=</mo><mrow><mo>−</mo><mrow><mfrac><mn>1</mn><mi>N</mi></mfrac><mo lspace="0em" rspace="0em">​</mo><mrow><munderover><mo movablelimits="false">∑</mo><mi>i</mi><mi>N</mi></munderover><mrow><mi>log</mi><mo lspace="0.167em">⁡</mo><mfrac><msup><mi>e</mi><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>s</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><mi>τ</mi></mrow><mo stretchy="false">)</mo></mrow></msup><msub><mi>Z</mi><mi>i</mi></msub></mfrac></mrow></mrow></mrow></mrow></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">L_{\textrm{embedding}}=-\frac{1}{N}\sum_{i}^{N}\log\frac{e^{(s(q_{i},d_{i}^{+})/\tau)}}{Z_{i}},</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td>
+<td rowspan="1" class="ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_right"><span class="ltx_tag ltx_tag_equation ltx_align_right">(1)</span></td>
+</tr></tbody>
+</table>
+<p class="ltx_p">where <math id="S3.SS1.p1.m2" class="ltx_Math" alttext="s(\cdot,\cdot)" display="inline"><semantics><mrow><mi>s</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><mo lspace="0em" rspace="0em">⋅</mo><mo rspace="0em">,</mo><mo lspace="0em" rspace="0em">⋅</mo><mo stretchy="false">)</mo></mrow></mrow><annotation encoding="application/x-tex">s(\cdot,\cdot)</annotation></semantics></math> is a similarity function (we use cosine similarity), <math id="S3.SS1.p1.m3" class="ltx_Math" alttext="\tau" display="inline"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math> is a temperature parameter, and <math id="S3.SS1.p1.m4" class="ltx_Math" alttext="Z_{i}" display="inline"><semantics><msub><mi>Z</mi><mi>i</mi></msub><annotation encoding="application/x-tex">Z_{i}</annotation></semantics></math> is the normalization factor that aggregates the similarity scores of the positive pair against various negative pairs:</p>
+<table id="S3.Ex2" class="ltx_equation ltx_eqn_table">
+
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S3.Ex2.m1" class="ltx_Math" alttext="Z_{i}=e^{(s(q_{i},d_{i}^{+})/\tau)}+\sum_{k}^{K}m_{ik}e^{(s(q_{i},d_{i,k}^{-})/\tau)}+\sum_{j\neq i}m_{ij}e^{(s(q_{i},q_{j})/\tau)}+\sum_{j\neq i}m_{ij}e^{(s(d_{i}^{+},d_{j})/\tau)}+\sum_{j\neq i}m_{ij}e^{(s(q_{i},d_{j})/\tau)}" display="block"><semantics><mrow><msub><mi>Z</mi><mi>i</mi></msub><mo>=</mo><mrow><msup><mi>e</mi><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>s</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><mi>τ</mi></mrow><mo stretchy="false">)</mo></mrow></msup><mo rspace="0.055em">+</mo><mrow><munderover><mo movablelimits="false">∑</mo><mi>k</mi><mi>K</mi></munderover><mrow><msub><mi>m</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>k</mi></mrow></msub><mo lspace="0em" rspace="0em">​</mo><msup><mi>e</mi><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>s</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msubsup><mi>d</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mo>−</mo></msubsup><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><mi>τ</mi></mrow><mo stretchy="false">)</mo></mrow></msup></mrow></mrow><mo rspace="0.055em">+</mo><mrow><munder><mo movablelimits="false">∑</mo><mrow><mi>j</mi><mo>≠</mo><mi>i</mi></mrow></munder><mrow><msub><mi>m</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>j</mi></mrow></msub><mo lspace="0em" rspace="0em">​</mo><msup><mi>e</mi><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>s</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msub><mi>q</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><mi>τ</mi></mrow><mo stretchy="false">)</mo></mrow></msup></mrow></mrow><mo rspace="0.055em">+</mo><mrow><munder><mo movablelimits="false">∑</mo><mrow><mi>j</mi><mo>≠</mo><mi>i</mi></mrow></munder><mrow><msub><mi>m</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>j</mi></mrow></msub><mo lspace="0em" rspace="0em">​</mo><msup><mi>e</mi><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>s</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><mo>,</mo><msub><mi>d</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><mi>τ</mi></mrow><mo stretchy="false">)</mo></mrow></msup></mrow></mrow><mo rspace="0.055em">+</mo><mrow><munder><mo movablelimits="false">∑</mo><mrow><mi>j</mi><mo>≠</mo><mi>i</mi></mrow></munder><mrow><msub><mi>m</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>j</mi></mrow></msub><mo lspace="0em" rspace="0em">​</mo><msup><mi>e</mi><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>s</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msub><mi>d</mi><mi>j</mi></msub><mo stretchy="false">)</mo></mrow></mrow><mo>/</mo><mi>τ</mi></mrow><mo stretchy="false">)</mo></mrow></msup></mrow></mrow></mrow></mrow><annotation encoding="application/x-tex">Z_{i}=e^{(s(q_{i},d_{i}^{+})/\tau)}+\sum_{k}^{K}m_{ik}e^{(s(q_{i},d_{i,k}^{-})/\tau)}+\sum_{j\neq i}m_{ij}e^{(s(q_{i},q_{j})/\tau)}+\sum_{j\neq i}m_{ij}e^{(s(d_{i}^{+},d_{j})/\tau)}+\sum_{j\neq i}m_{ij}e^{(s(q_{i},d_{j})/\tau)}</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td>
+</tr></tbody>
+</table>
+<p class="ltx_p">where these terms represent similarities with: (1) the positive document <math id="S3.SS1.p1.m5" class="ltx_Math" alttext="d_{i}^{+}" display="inline"><semantics><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><annotation encoding="application/x-tex">d_{i}^{+}</annotation></semantics></math>, (2) <math id="S3.SS1.p1.m6" class="ltx_Math" alttext="K" display="inline"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math> hard negatives <math id="S3.SS1.p1.m7" class="ltx_Math" alttext="d_{i,k}^{-}" display="inline"><semantics><msubsup><mi>d</mi><mrow><mi>i</mi><mo>,</mo><mi>k</mi></mrow><mo>−</mo></msubsup><annotation encoding="application/x-tex">d_{i,k}^{-}</annotation></semantics></math>, (3) other in-batch queries <math id="S3.SS1.p1.m8" class="ltx_Math" alttext="q_{j}" display="inline"><semantics><msub><mi>q</mi><mi>j</mi></msub><annotation encoding="application/x-tex">q_{j}</annotation></semantics></math>, (4) other in-batch documents <math id="S3.SS1.p1.m9" class="ltx_Math" alttext="d_{j}" display="inline"><semantics><msub><mi>d</mi><mi>j</mi></msub><annotation encoding="application/x-tex">d_{j}</annotation></semantics></math> compared against the positive document <math id="S3.SS1.p1.m10" class="ltx_Math" alttext="d_{i}^{+}" display="inline"><semantics><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><annotation encoding="application/x-tex">d_{i}^{+}</annotation></semantics></math>. (5) other in-batch documents <math id="S3.SS1.p1.m11" class="ltx_Math" alttext="d_{j}" display="inline"><semantics><msub><mi>d</mi><mi>j</mi></msub><annotation encoding="application/x-tex">d_{j}</annotation></semantics></math> compared against the query <math id="S3.SS1.p1.m12" class="ltx_Math" alttext="q_{i}" display="inline"><semantics><msub><mi>q</mi><mi>i</mi></msub><annotation encoding="application/x-tex">q_{i}</annotation></semantics></math>. The mask factor <math id="S3.SS1.p1.m13" class="ltx_Math" alttext="m_{ij}" display="inline"><semantics><msub><mi>m</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">m_{ij}</annotation></semantics></math> is designed to mitigate the impact of false negatives and is defined as:</p>
+<table id="S3.Ex3" class="ltx_equation ltx_eqn_table">
+
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S3.Ex3.m1" class="ltx_math_unparsed" alttext="m_{ij}=\begin{cases}0&amp;\text{if }s_{ij}&gt;s(q_{i},d_{i}^{+})+0.1\text{ or }d_{j}==d_{i}^{+},\\
+1&amp;\text{otherwise},\end{cases}" display="block"><semantics><mrow><msub><mi>m</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>j</mi></mrow></msub><mo>=</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mn>0</mn></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>if </mtext><msub><mi>s</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>j</mi></mrow></msub><mo>&gt;</mo><mi>s</mi><mrow><mo stretchy="false">(</mo><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><mo stretchy="false">)</mo></mrow><mo>+</mo><mn>0.1</mn><mtext> or </mtext><msub><mi>d</mi><mi>j</mi></msub><mo rspace="0em">=</mo><mo lspace="0em">=</mo><msubsup><mi>d</mi><mi>i</mi><mo>+</mo></msubsup><mo>,</mo></mrow></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mn>1</mn></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>otherwise</mtext><mo>,</mo></mrow></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">m_{ij}=\begin{cases}0&amp;\text{if }s_{ij}&gt;s(q_{i},d_{i}^{+})+0.1\text{ or }d_{j}==d_{i}^{+},\\
+1&amp;\text{otherwise},\end{cases}</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td>
+</tr></tbody>
+</table>
+<p class="ltx_p">among which <math id="S3.SS1.p1.m14" class="ltx_Math" alttext="s_{ij}" display="inline"><semantics><msub><mi>s</mi><mrow><mi>i</mi><mo lspace="0em" rspace="0em">​</mo><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">s_{ij}</annotation></semantics></math> is the corresponding score of <math id="S3.SS1.p1.m15" class="ltx_Math" alttext="q_{i},d_{j}" display="inline"><semantics><mrow><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msub><mi>d</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">q_{i},d_{j}</annotation></semantics></math> or <math id="S3.SS1.p1.m16" class="ltx_Math" alttext="q_{i},q_{j}" display="inline"><semantics><mrow><msub><mi>q</mi><mi>i</mi></msub><mo>,</mo><msub><mi>q</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">q_{i},q_{j}</annotation></semantics></math>.</p>
+</div>
+<div id="S3.SS1.p2" class="ltx_para ltx_noindent">
+<p class="ltx_p">For the reranking model, we optimize the Supervised Fine-Tuning (SFT) loss defined as:</p>
+<table id="S3.E2" class="ltx_equation ltx_eqn_table">
+
+<tbody><tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S3.E2.m1" class="ltx_Math" alttext="L_{\textrm{reranking}}=-\log p(l|\mathcal{P}(q,d))," display="block"><semantics><mrow><mrow><msub><mi>L</mi><mtext>reranking</mtext></msub><mo>=</mo><mrow><mo rspace="0.167em">−</mo><mrow><mrow><mi>log</mi><mo lspace="0.167em">⁡</mo><mi>p</mi></mrow><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><mrow><mi>l</mi><mo fence="false">|</mo><mrow><mi class="ltx_font_mathcaligraphic">𝒫</mi><mo lspace="0em" rspace="0em">​</mo><mrow><mo stretchy="false">(</mo><mi>q</mi><mo>,</mo><mi>d</mi><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">L_{\textrm{reranking}}=-\log p(l|\mathcal{P}(q,d)),</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td>
+<td rowspan="1" class="ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_right"><span class="ltx_tag ltx_tag_equation ltx_align_right">(2)</span></td>
+</tr></tbody>
+</table>
+<p class="ltx_p">where <math id="S3.SS1.p2.m1" class="ltx_math_unparsed" alttext="p(\cdot|*)" display="inline"><semantics><mrow><mi>p</mi><mrow><mo stretchy="false">(</mo><mo lspace="0em" rspace="0em">⋅</mo><mo fence="false" stretchy="false">|</mo><mo lspace="0em" rspace="0em">∗</mo><mo stretchy="false">)</mo></mrow></mrow><annotation encoding="application/x-tex">p(\cdot|*)</annotation></semantics></math> denotes the probability assigned by LLM. The label <math id="S3.SS1.p2.m2" class="ltx_Math" alttext="l" display="inline"><semantics><mi>l</mi><annotation encoding="application/x-tex">l</annotation></semantics></math> is “yes” for positive documents and “no” for negatives. This loss function encourages the model to assign higher probabilities to correct labels, thereby improving the ranking performance.</p>
+</div>
+</section>
+<section id="S3.SS2" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">3.2 </span>Multi-stage Training</h3>
+
+<div id="S3.SS2.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">The multi-stage training approach is a common practice for training text embedding models <cite class="ltx_cite ltx_citemacro_citep">(Li et al., <a href="#bib.bib11" title="" class="ltx_ref">2023</a>; Wang et al., <a href="#bib.bib19" title="" class="ltx_ref">2022</a>; Chen et al., <a href="#bib.bib1" title="" class="ltx_ref">2024</a>)</cite>. This strategy typically begins with initial training on large-scale, semi-supervised data that includes noise, followed by fine-tuning using smaller, high-quality supervised datasets. This two-step process enhances the performance and generalization capabilities of embedding models. Large-scale weakly supervised training data contribute significantly to the model’s generalization, while fine-tuning with high-quality data in subsequent stages further improves model performance. Both stages of training for embedding models utilize the optimization objective defined in Equation <a href="#S3.E1" title="In 3.1 Training Objective ‣ 3 Models Training ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">1</span></a>, whereas the reranking model training employs the loss function defined in Equation <a href="#S3.E2" title="In 3.1 Training Objective ‣ 3 Models Training ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">2</span></a> as the optimization target.</p>
+</div>
+<div id="S3.SS2.p2" class="ltx_para ltx_noindent">
+<p class="ltx_p">Building upon the existing multi-stage training framework, the Qwen3 Embedding series introduces the following key innovations:</p>
+<ul id="S3.I1" class="ltx_itemize">
+<li id="S3.I1.i1" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">•</span> 
+<div id="S3.I1.i1.p1" class="ltx_para">
+<p class="ltx_p">Large-Scale Synthetic Data-Driven Weak Supervision Training: Unlike previous works (e.g., GTE, E5, BGE models), where weakly supervised training data are primarily collected from open-source communities such as Q<math id="S3.I1.i1.p1.m1" class="ltx_Math" alttext="\&amp;" display="inline"><semantics><mo>&amp;</mo><annotation encoding="application/x-tex">\&amp;</annotation></semantics></math>A forums or academic papers, we propose leveraging the text understanding and generation capabilities of foundation models to synthesize pair data directly. This approach allows for arbitrary definition of various dimensions of the desired pair data, such as task, language, length, and difficulty within the synthesis prompts. Compared to data collection from open-domain sources, foundation model-driven data synthesis offers greater controllability, enabling precise management of the quality and diversity of the generated data, particularly in low-resource scenarios and languages.</p>
+</div>
+</li>
+<li id="S3.I1.i2" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">•</span> 
+<div id="S3.I1.i2.p1" class="ltx_para">
+<p class="ltx_p">High-Quality Synthetic Data Utilization in Supervised Fine Tuning: Due to the exceptional performance of the Qwen3 Foundation model, the synthesized data is of notably high quality. Therefore, in the second stage of supervised training, selective incorporation of this high-quality synthetic data further enhances the overall model performance and generalization capabilities.</p>
+</div>
+</li>
+<li id="S3.I1.i3" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">•</span> 
+<div id="S3.I1.i3.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">Model Merging: Inspired by previous work <cite class="ltx_cite ltx_citemacro_citep">(Li et al., <a href="#bib.bib10" title="" class="ltx_ref">2024</a>)</cite>, after completing the supervised fine-tuning, we applied a model merging technique based on spherical linear interpolation (slerp). This technique involves merging multiple model checkpoints saved during the fine-tuning process. This step aims to boost the model’s robustness and generalization performance across various data distributions.</p>
+</div>
+</li>
+</ul>
+<p class="ltx_p">It is important to note that the reranking model’s training process does not include a first-stage weakly supervised training phase.</p>
+</div>
+</section>
+<section id="S3.SS3" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">3.3 </span>Synthetic Dataset</h3>
+
+<div id="S3.SS3.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">To create a robust synthetic dataset for training models on various similarity tasks, we generate diverse text pairs spanning categories such as retrieval, bitext mining, classification, and semantic textual similarity (STS). The quality of these synthetic data pairs is ensured by utilizing the Qwen3-32B model as the foundational model for data synthesis. We have designed a diverse prompting strategy to improve the variety and authenticity of the generated data. For instance, in the text retrieval task, we synthesize data using the multilingual pre-training corpus from Qwen3. During the data synthesis process, specific roles are assigned to each document to simulate potential users querying that document. This injection of user perspectives enhances the diversity and realism of the synthetic queries. Specifically, we utilize a retrieval model to identify the top five role candidates for each document from a role library and present these documents along with their role candidates to the prompt. This guides the model in outputting the most suitable role configuration for query generation. Moreover, the prompt incorporates various dimensions such as query type (e.g., keyword, factual, summary, judgment), query length, difficulty, and language. This multidimensional approach ensures the quality and diversity of the synthetic data.</p>
+</div>
+<div id="S3.SS3.p2" class="ltx_para">
+<p class="ltx_p">Finally, we create a total of approximately 150 million pairs of multi-task weak supervision training data. Our experiments reveal that the embedding model trained with these synthetic data performs exceptionally well in downstream evaluations, particularly surpassing many previously supervised models in the MTEB Multilingual benchmarks. This motivates us to filter the synthetic data to identify high-quality pairs for inclusion in a second stage of supervised training. We employ a simple cosine similarity calculation to select data pairs, retaining those with a cosine similarity greater than 0.7 from randomly sampled data. Ultimately, approximately 12 million high-quality supervised training data pairs are selected for further training.</p>
+</div>
+<figure id="S3.T2" class="ltx_table">
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer" style="width:433.6pt;height:228.9pt;vertical-align:-228.9pt;"><span class="ltx_transformed_inner" style="transform:translate(-96.7pt,0.0pt) scale(0.691500518837333,0.691500518837333) ;">
+<table class="ltx_tabular ltx_align_middle">
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Model</span></td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Size</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Mean</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">(Task)</span></td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Mean</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">(Type)</span></td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Bitext</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Mining</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Class-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">ification</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Clus-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">tering</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Inst.</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Retrieval</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Multilabel</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Class.</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Pair</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">Class.</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">Rerank</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">Retrieval</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">STS</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="13"><span class="ltx_text ltx_font_bold">Selected Open-Source Models</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">NV-Embed-v2</td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">7B</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">56.29</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">49.58</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">57.84</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">57.29</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">40.80</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">1.04</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">18.63</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">78.94</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">63.82</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">56.72</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">71.10</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">GritLM-7B</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">7B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">60.92</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">53.74</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">70.53</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">61.83</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">49.75</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">3.45</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">22.77</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">79.94</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">63.78</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">58.31</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">73.33</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">BGE-M3</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">59.56</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">52.18</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">79.11</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">60.35</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">40.88</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-3.11</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">20.1</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">80.76</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">62.79</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">54.60</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">74.12</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">multilingual-e5-large-instruct</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">63.22</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">55.08</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">80.13</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">64.94</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">50.75</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-0.40</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">22.91</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">80.86</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">62.61</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">57.12</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">76.81</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">gte-Qwen2-1.5B-instruct</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">1.5B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">59.45</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">52.69</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">62.51</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">58.32</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">52.05</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">0.74</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">24.02</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">81.58</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">62.58</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">60.78</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">71.61</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">gte-Qwen2-7b-Instruct</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">7B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">62.51</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">55.93</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">73.92</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">61.55</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">52.77</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">4.94</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">25.48</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">85.13</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">65.55</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">60.08</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">73.98</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="13"><span class="ltx_text ltx_font_bold">Commercial APIs</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">text-embedding-3-large</td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">58.93</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">51.41</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">62.17</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">60.27</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">46.89</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">-2.68</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">22.03</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">79.17</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">63.89</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">59.27</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">71.68</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">Cohere-embed-multilingual-v3.0</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">61.12</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">53.23</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">70.50</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">62.95</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">46.89</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-1.89</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">22.74</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">79.88</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">64.07</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">59.16</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">74.80</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">Gemini Embedding</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">68.37</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">59.59</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">79.28</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">71.82</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">54.59</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">5.18</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">29.16</span></td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">83.63</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">65.58</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">67.71</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">79.40</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="13"><span class="ltx_text ltx_font_bold">Qwen3 Embedding Models</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-0.6B</span></td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">64.33</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">56.00</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">72.22</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">66.83</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">52.33</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">5.09</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">24.59</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">80.83</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">61.41</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">64.64</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">76.17</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-4B</span></td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">4B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">69.45</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">60.86</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">79.36</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">72.33</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">57.15</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">11.56</span></td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">26.77</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">85.05</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">65.08</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">69.60</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">80.86</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-8B</span></td>
+<td class="ltx_td ltx_align_right ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">8B</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">70.58</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">61.69</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">80.89</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">74.00</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">57.65</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;">10.06</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;">28.66</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">86.40</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">65.63</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">70.88</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">81.08</span></td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 2: </span>Performance on MTEB Multilingual <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>. For compared models, the scores are retrieved from MTEB online <a target="_blank" href="https://huggingface.co/spaces/mteb/leaderboard" title="" class="ltx_ref ltx_href">leaderboard</a> on June 4th, 2025.</figcaption>
+</figure>
+</section>
+</section>
+<section id="S4" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">4 </span>Evaluation</h2>
+
+<div id="S4.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">We conduct comprehensive and fair evaluations across multiple benchmarks to assess the capabilities of Qwen3 Embedding models.</p>
+</div>
+<section id="S4.SS1" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">4.1 </span>Settings</h3>
+
+<div id="S4.SS1.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">For the text embedding models, we utilize the Massive Multilingual Text Embedding Benchmark (MMTEB) <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite> for evaluation. MMTEB is a large-scale, community-driven expansion of MTEB <cite class="ltx_cite ltx_citemacro_citep">(Muennighoff et al., <a href="#bib.bib13" title="" class="ltx_ref">2023</a>)</cite>, covering over 500 quality-controlled evaluation tasks across more than 250 languages. In addition to classic text tasks such as as a variety of retrieval, classification, and semantic textual similarity, MMTEB includes a diverse set of challenging and novel tasks, such as instruction following, long-document retrieval, and code retrieval, representing the largest multilingual collection of evaluation tasks for embedding models to date. Our MMTEB evaluations encompass 216 individual evaluation tasks, consisting of 131 tasks for MTEB (Multilingual) <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>, 41 tasks for MTEB (English, v2) <cite class="ltx_cite ltx_citemacro_citep">(Muennighoff et al., <a href="#bib.bib13" title="" class="ltx_ref">2023</a>)</cite>, 32 tasks for CMTEB <cite class="ltx_cite ltx_citemacro_citep">(Xiao et al., <a href="#bib.bib22" title="" class="ltx_ref">2024</a>)</cite>, and 12 code retrieval tasks for MTEB (Code) <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>.</p>
+</div>
+<div id="S4.SS1.p2" class="ltx_para ltx_noindent">
+<p class="ltx_p">Moreover, we select a series of text retrieval tasks to assess the text reranking capabilities of our models. We explore three types of retrieval tasks: (1) Basic Relevance Retrieval, categorized into English, Chinese, and Multilingual, evaluated on MTEB <cite class="ltx_cite ltx_citemacro_citep">(Muennighoff et al., <a href="#bib.bib13" title="" class="ltx_ref">2023</a>)</cite>, CMTEB <cite class="ltx_cite ltx_citemacro_citep">(Xiao et al., <a href="#bib.bib22" title="" class="ltx_ref">2024</a>)</cite>, MMTEB <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>, and MLDR <cite class="ltx_cite ltx_citemacro_citep">(Chen et al., <a href="#bib.bib1" title="" class="ltx_ref">2024</a>)</cite>, respectively; (2) Code Retrieval, evaluated on MTEB-Code <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>, which comprises only code-related retrieval data.; and (3) Complex Instruction Retrieval, evaluated on FollowIR <cite class="ltx_cite ltx_citemacro_citep">(Weller et al., <a href="#bib.bib21" title="" class="ltx_ref">2024</a>)</cite>.</p>
+</div>
+<section id="S4.SS1.SSS0.Px1" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Compared Methods</h4>
+
+<div id="S4.SS1.SSS0.Px1.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">We compare our models with the most prominent open-source text embedding models and commercial API services. The open-source models include the GTE <cite class="ltx_cite ltx_citemacro_citep">(Li et al., <a href="#bib.bib11" title="" class="ltx_ref">2023</a>; Zhang et al., <a href="#bib.bib25" title="" class="ltx_ref">2024b</a>)</cite>, E5 <cite class="ltx_cite ltx_citemacro_citep">(Wang et al., <a href="#bib.bib19" title="" class="ltx_ref">2022</a>)</cite>, and BGE <cite class="ltx_cite ltx_citemacro_citep">(Xiao et al., <a href="#bib.bib22" title="" class="ltx_ref">2024</a>)</cite> series, as well as NV-Embed-v2 <cite class="ltx_cite ltx_citemacro_citep">(Lee et al., <a href="#bib.bib8" title="" class="ltx_ref">2025a</a>)</cite>, GritLM-7B <cite class="ltx_cite ltx_citemacro_cite">Muennighoff et al. (<a href="#bib.bib14" title="" class="ltx_ref">2025</a>)</cite>. The commercial APIs evaluated are text-embedding-3-large from OpenAI, Gemini-embedding from Google, and Cohere-embed-multilingual-v3.0.
+For reranking, we compare with the rerankers of jina<span id="footnote1a" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">1</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">1</sup><span class="ltx_tag ltx_tag_note">1</span>
+<a target="_blank" href="https://hf.co/jinaai/jina-reranker-v2-base-multilingual" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://hf.co/jinaai/jina-reranker-v2-base-multilingual</a>
+</span></span></span>, mGTE <cite class="ltx_cite ltx_citemacro_citep">(Zhang et al., <a href="#bib.bib25" title="" class="ltx_ref">2024b</a>)</cite> and BGE-m3 <cite class="ltx_cite ltx_citemacro_citep">(Chen et al., <a href="#bib.bib1" title="" class="ltx_ref">2024</a>)</cite>.</p>
+</div>
+<figure id="S4.T3" class="ltx_table">
+<div class="ltx_inline-block ltx_transformed_outer" style="width:433.6pt;height:263.1pt;vertical-align:-263.1pt;"><span class="ltx_transformed_inner" style="transform:translate(-41.1pt,0.0pt) scale(0.840709285408704,0.840709285408704) ;">
+<table class="ltx_tabular ltx_align_middle">
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">Model</td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">Size</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">Dim</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="2">MTEB (Eng, v2)</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="2">CMTEB</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">MTEB (Code)</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"></td>
+<td class="ltx_td ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"></td>
+<td class="ltx_td ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"></td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">Mean (Task)</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">Mean (Type)</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">Mean (Task)</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">Mean (Type)</td>
+<td class="ltx_td ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="8"><span class="ltx_text ltx_font_bold">Selected Open-Source Models</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">NV-Embed-v2</td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">7B</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">4096</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">69.81</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">65.00</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">63.0</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">62.0</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">GritLM-7B</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">7B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">4096</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">67.07</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">63.22</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">73.6<sup class="ltx_sup"><span class="ltx_text ltx_font_italic">α</span></sup>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">multilingual-e5-large-instruct</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">1024</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">65.53</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">61.21</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">65.0<sup class="ltx_sup"><span class="ltx_text ltx_font_italic">α</span></sup>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">gte-Qwen2-1.5b-instruct</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">1.5B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">1536</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">67.20</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">63.26</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">67.12</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">67.79</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">gte-Qwen2-7b-instruct</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">7B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">3584</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">70.72</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">65.77</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">71.62</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">72.19</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">56.41<sup class="ltx_sup"><span class="ltx_text ltx_font_italic">γ</span></sup>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="8"><span class="ltx_text ltx_font_bold">Commercial APIs</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">text-embedding-3-large</td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">3072</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">66.43</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">62.15</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">58.95<sup class="ltx_sup"><span class="ltx_text ltx_font_italic">γ</span></sup>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">cohere-embed-multilingual-v3.0</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">1024</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">66.01</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">61.43</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">51.94<sup class="ltx_sup"><span class="ltx_text ltx_font_italic">γ</span></sup>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;">Gemini Embedding</td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">3072</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">73.30</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">67.67</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">-</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">74.66<sup class="ltx_sup"><span class="ltx_text ltx_font_italic">γ</span></sup>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="8"><span class="ltx_text ltx_font_bold">Qwen3 Embedding Models</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-0.6B</span></td>
+<td class="ltx_td ltx_align_right ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">1024</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">70.70</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">64.88</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">66.33</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">67.44</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">75.41</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-4B</span></td>
+<td class="ltx_td ltx_align_right ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">4B</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">2560</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">74.60</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">68.09</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">72.26</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">73.50</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">80.06</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-8B</span></td>
+<td class="ltx_td ltx_align_right ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">8B</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">4096</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">75.22</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">68.70</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">73.83</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">75.00</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">80.68</span></td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_table">Table 3: </span>Performance on MTEB Engilish, MTEB Chinese, MTEB Code. <sup class="ltx_sup"><span class="ltx_text ltx_font_italic">α</span></sup>Taken from <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>. <sup class="ltx_sup"><span class="ltx_text ltx_font_italic">γ</span></sup>Taken from <cite class="ltx_cite ltx_citemacro_citep">(Lee et al., <a href="#bib.bib9" title="" class="ltx_ref">2025b</a>)</cite>. For other compared models, the scores are retrieved from MTEB online <a target="_blank" href="https://huggingface.co/spaces/mteb/leaderboard" title="" class="ltx_ref ltx_href">leaderboard</a> on June 4th, 2025.</figcaption>
+</figure>
+</section>
+</section>
+<section id="S4.SS2" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">4.2 </span>Main Results</h3>
+
+<section id="S4.SS2.SSS0.Px1" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Embedding</h4>
+
+<div id="S4.SS2.SSS0.Px1.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">In Table <a href="#S3.T2" title="Table 2 ‣ 3.3 Synthetic Dataset ‣ 3 Models Training ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">2</span></a>, we present the evaluation results on MMTEB <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>, which comprehensively covers a wide range of embedding tasks across multiple languages.
+Our Qwen3-Embedding-4B/8B models achieve the best performance, and our smallest model, Qwen3-Embedding-0.6B, only lags behind the best-performing baseline method (Gemini-Embedding), despite having only 0.6B parameters.
+In Table <a href="#S4.T3" title="Table 3 ‣ Compared Methods ‣ 4.1 Settings ‣ 4 Evaluation ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">3</span></a>, we present the evaluation results on MTEB (English, v2) <cite class="ltx_cite ltx_citemacro_citep">(Muennighoff et al., <a href="#bib.bib13" title="" class="ltx_ref">2023</a>)</cite>, CMTEB <cite class="ltx_cite ltx_citemacro_citep">(Xiao et al., <a href="#bib.bib22" title="" class="ltx_ref">2024</a>)</cite>, and MTEB (Code) <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>.
+The scores reflect similar trends as MMTEB, with our Qwen3-Embedding-4B/8B models consistently outperforming others. Notably, the Qwen3-Embedding-0.6B model ranks just behind the Gemini-Embedding, while being competitive with the gte-Qwen2-7B-instruct.</p>
+</div>
+</section>
+<section id="S4.SS2.SSS0.Px2" class="ltx_paragraph">
+<h4 class="ltx_title ltx_title_paragraph">Reranking</h4>
+
+<div id="S4.SS2.SSS0.Px2.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">In Table <a href="#S4.T4" title="Table 4 ‣ Reranking ‣ 4.2 Main Results ‣ 4 Evaluation ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">4</span></a>, we present the evaluation results on various reranking tasks (§<a href="#S4.SS1" title="4.1 Settings ‣ 4 Evaluation ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">4.1</span></a>). We utilize the Qwen3-Embedding-0.6B model to retrieve the top-100 candidates and then apply different reranking models for further refinement. This approach ensures a fair evaluation of the reranking models. Our results indicate that all three Qwen3-Reranker models enhance performance compared to the embedding model and surpass all baseline reranking methods, with Qwen3-Reranker-8B achieving the highest performance across most tasks.</p>
+</div>
+<figure id="S4.T4" class="ltx_table">
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer" style="width:433.6pt;height:165pt;vertical-align:-165.0pt;"><span class="ltx_transformed_inner" style="transform:translate(-28.9pt,0.0pt) scale(0.882236530447255,0.882236530447255) ;">
+<table class="ltx_tabular ltx_guessed_headers ltx_align_middle">
+<thead class="ltx_thead">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_th ltx_th_column ltx_th_row ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;"></th>
+<th class="ltx_td ltx_th ltx_th_column ltx_th_row ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;"></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;" colspan="4">Basic Relevance Retrieval</th>
+<th class="ltx_td ltx_th ltx_th_column ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;"></th>
+<th class="ltx_td ltx_th ltx_th_column ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;"></th>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_column ltx_th_row" style="padding-left:3.0pt;padding-right:3.0pt;">Model</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_th_row ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">Param</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">MTEB-R</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">CMTEB-R</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">MMTEB-R</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">MLDR</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">MTEB-Code</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">FollowIR</th>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_column ltx_th_row ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-0.6B</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_th_row ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">61.82</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">71.02</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">64.64</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">50.26</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">75.41</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">5.09</th>
+</tr>
+</thead>
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">Jina-multilingual-reranker-v2-base</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">0.3B</th>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">58.22</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">63.37</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">63.73</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">39.66</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">58.98</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">-0.68</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:3.0pt;padding-right:3.0pt;">gte-multilingual-reranker-base</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">0.3B</th>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">59.51</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">74.08</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">59.44</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">66.33</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">54.18</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-1.64</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:3.0pt;padding-right:3.0pt;">BGE-reranker-v2-m3</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</th>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">57.03</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">72.16</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">58.36</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">59.51</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">41.38</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">-0.01</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Reranker-0.6B</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">0.6B</th>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">65.80</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">71.31</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">66.36</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">67.28</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">73.42</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">5.41</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Reranker-4B</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">4B</th>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">69.76</span></td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">75.94</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">72.74</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">69.97</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">81.20</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">14.84</span></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Reranker-8B</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_bb ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">8B</th>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;">69.02</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">77.45</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">72.94</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">70.19</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">81.22</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:3.0pt;padding-right:3.0pt;">8.05</td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 4: </span>
+Evaluation results for reranking models. We use the retrieval subsets of MTEB(eng, v2), MTEB(cmn, v1) and MMTEB, which are MTEB-R, CMTEB-R and MMTEM-R.
+The rest are all retrieval tasks.
+All scores are our runs based on the retrieval top-<math id="S4.T4.m2" class="ltx_Math" alttext="100" display="inline"><semantics><mn>100</mn><annotation encoding="application/x-tex">100</annotation></semantics></math> results from the first row.
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="S4.SS3" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">4.3 </span>Analysis</h3>
+
+<div id="S4.SS3.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">To further analyze and explore the key elements of the Qwen3 Embedding model training framework, we conduct an analysis from the following dimensions:</p>
+</div>
+<div id="S4.SS3.p2" class="ltx_para ltx_noindent">
+<p class="ltx_p"><span class="ltx_text ltx_font_bold">Effectiveness of Large-Scale Weakly Supervised Pre-Training</span>
+We first analyze the effectiveness of the large-scale weak supervised training stage for the embedding models. As shown in Table <a href="#S4.T5" title="Table 5 ‣ 4.3 Analysis ‣ 4 Evaluation ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">5</span></a>, the Qwen3-Embedding-0.6B model trained solely on synthetic data (without subsequent training stages, as indicated in the first row) achieves reasonable and strong performance compared to the final Qwen3-Embedding-0.6B model (as shown in the last row). If we further remove the weak supervised training stage (i.e., without synthetic data training, as seen in the second row), the final performance shows a clear decline. This indicates that the large-scale weak supervised training stage is crucial for achieving superior performance.</p>
+</div>
+<div id="S4.SS3.p3" class="ltx_para ltx_noindent">
+<p class="ltx_p"><span class="ltx_text ltx_font_bold">Effectiveness of Model Merging</span>
+Next, we compare the performance differences arising from the model merging stage. As shown in Table <a href="#S4.T5" title="Table 5 ‣ 4.3 Analysis ‣ 4 Evaluation ‣ Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models" class="ltx_ref"><span class="ltx_text ltx_ref_tag">5</span></a>, the model trained without model merging techniques (the third row, which uses data sampling to balance various tasks) performs considerably worse than the final Qwen3-Embedding-0.6B model (which employs model merging, as shown in the last row). This indicates that the model merging stage is also critical for developing strong models.</p>
+</div>
+<figure id="S4.T5" class="ltx_table">
+<div class="ltx_inline-block ltx_transformed_outer" style="width:433.6pt;height:99.3pt;vertical-align:-99.3pt;"><span class="ltx_transformed_inner" style="transform:translate(-34.3pt,0.0pt) scale(0.863330002167612,0.863330002167612) ;">
+<table class="ltx_tabular ltx_guessed_headers ltx_align_middle">
+<thead class="ltx_thead">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_column ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">Model</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">MMTEB</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">MTEB (Eng, v2)</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_r ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">CMTEB</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt" style="padding-left:3.0pt;padding-right:3.0pt;">MTEB (Code, v1)</th>
+</tr>
+</thead>
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-0.6B w/ only synthetic data</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">58.49</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">60.63</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">59.78</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">66.79</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-0.6B w/o synthetic data</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">61.21</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">65.59</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">63.37</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">74.58</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-0.6B w/o model merge</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">62.56</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">68.18</td>
+<td class="ltx_td ltx_align_center ltx_border_r" style="padding-left:3.0pt;padding-right:3.0pt;">64.76</td>
+<td class="ltx_td ltx_align_center" style="padding-left:3.0pt;padding-right:3.0pt;">74.89</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;"><span class="ltx_text ltx_font_bold">Qwen3-Embedding-0.6B</span></td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">64.33</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">70.70</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">66.33</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_t" style="padding-left:3.0pt;padding-right:3.0pt;">75.41</td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_table">Table 5: </span>Performance (mean task) on MMTEB, MTEB(eng, v2), CMTEB and MTEB(code, v1) for Qwen3-Embedding-0.6B model with different training setting.</figcaption>
+</figure>
+</section>
+</section>
+<section id="S5" class="ltx_section">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">5 </span>Conclusion</h2>
+
+<div id="S5.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">In this technical report, we present the Qwen3-Embedding series, a comprehensive suite of text embedding and reranking models based on the Qwen3 foundation models. These models are designed to excel in a wide range of text embedding and reranking tasks, including multilingual retrieval, code retrieval, and complex instruction following. The Qwen3-Embedding models are built upon a robust multi-stage training pipeline that combines large-scale weakly supervised pre-training on synthetic data with supervised fine-tuning and model merging on high-quality datasets. The Qwen3 LLMs play a crucial role in synthesizing diverse training data across multiple languages and tasks, thereby enhancing the models’ capabilities. Our comprehensive evaluations demonstrate that the Qwen3-Embedding models achieve state-of-the-art performance across various benchmarks, including MTEB, CMTEB, MMTEB, and several retrieval benchmarks. We are pleased to open-source the Qwen3-Embedding and Qwen3-Reranker models (0.6B, 4B, and 8B), making them available for the community to use and build upon.</p>
+</div>
+</section>
+<section id="bib" class="ltx_bibliography">
+<h2 class="ltx_title ltx_title_bibliography">References</h2>
+
+<ul class="ltx_biblist">
+<li id="bib.bib1" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Chen et al. (2024)</span>
+<span class="ltx_bibblock">
+Jianlyu Chen, Shitao Xiao, Peitian Zhang, Kun Luo, Defu Lian, and Zheng Liu.
+
+</span>
+<span class="ltx_bibblock">M3-embedding: Multi-linguality, multi-functionality, multi-granularity text embeddings through self-knowledge distillation.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Findings of the Association for Computational Linguistics: ACL 2024</em>, pp.  2318–2335, Bangkok, Thailand, August 2024. Association for Computational Linguistics.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://aclanthology.org/2024.findings-acl.137/" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://aclanthology.org/2024.findings-acl.137/</a>.
+
+</span>
+</li>
+<li id="bib.bib2" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Enevoldsen et al. (2025)</span>
+<span class="ltx_bibblock">
+Kenneth Enevoldsen, Isaac Chung, Imene Kerboua, Márton Kardos, Ashwin Mathur, David Stap, Jay Gala, Wissam Siblini, Dominik Krzemiński, Genta Indra Winata, et al.
+
+</span>
+<span class="ltx_bibblock">MMTEB: Massive multilingual text embedding benchmark.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">The Thirteenth International Conference on Learning Representations</em>, 2025.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://openreview.net/forum?id=zl3pfz4VCV" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://openreview.net/forum?id=zl3pfz4VCV</a>.
+
+</span>
+</li>
+<li id="bib.bib3" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Ge et al. (2024)</span>
+<span class="ltx_bibblock">
+Tao Ge, Xin Chan, Xiaoyang Wang, Dian Yu, Haitao Mi, and Dong Yu.
+
+</span>
+<span class="ltx_bibblock">Scaling synthetic data creation with 1,000,000,000 personas.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2406.20094</em>, 2024.
+
+</span>
+</li>
+<li id="bib.bib4" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Huang et al. (2020)</span>
+<span class="ltx_bibblock">
+Jui-Ting Huang, Ashish Sharma, Shuying Sun, Li Xia, David Zhang, Philip Pronin, Janani Padmanabhan, Giuseppe Ottaviano, and Linjun Yang.
+
+</span>
+<span class="ltx_bibblock">Embedding-based retrieval in facebook search.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining</em>, pp.  2553–2561, 2020.
+
+</span>
+</li>
+<li id="bib.bib5" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Hurst et al. (2024)</span>
+<span class="ltx_bibblock">
+Aaron Hurst, Adam Lerer, Adam P Goucher, Adam Perelman, Aditya Ramesh, Aidan Clark, AJ Ostrow, Akila Welihinda, Alan Hayes, Alec Radford, et al.
+
+</span>
+<span class="ltx_bibblock">Gpt-4o system card.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2410.21276</em>, 2024.
+
+</span>
+</li>
+<li id="bib.bib6" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Karpukhin et al. (2020)</span>
+<span class="ltx_bibblock">
+Vladimir Karpukhin, Barlas Oguz, Sewon Min, Patrick SH Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen-tau Yih.
+
+</span>
+<span class="ltx_bibblock">Dense passage retrieval for open-domain question answering.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">EMNLP (1)</em>, pp.  6769–6781, 2020.
+
+</span>
+</li>
+<li id="bib.bib7" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Lee et al. (2024)</span>
+<span class="ltx_bibblock">
+Chankyu Lee, Rajarshi Roy, Mengyao Xu, Jonathan Raiman, Mohammad Shoeybi, Bryan Catanzaro, and Wei Ping.
+
+</span>
+<span class="ltx_bibblock">Nv-embed: Improved techniques for training llms as generalist embedding models.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2405.17428</em>, 2024.
+
+</span>
+</li>
+<li id="bib.bib8" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Lee et al. (2025a)</span>
+<span class="ltx_bibblock">
+Chankyu Lee, Rajarshi Roy, Mengyao Xu, Jonathan Raiman, Mohammad Shoeybi, Bryan Catanzaro, and Wei Ping.
+
+</span>
+<span class="ltx_bibblock">NV-embed: Improved techniques for training LLMs as generalist embedding models.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">The Thirteenth International Conference on Learning Representations</em>, 2025a.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://openreview.net/forum?id=lgsyLSsDRe" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://openreview.net/forum?id=lgsyLSsDRe</a>.
+
+</span>
+</li>
+<li id="bib.bib9" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Lee et al. (2025b)</span>
+<span class="ltx_bibblock">
+Jinhyuk Lee, Feiyang Chen, Sahil Dua, Daniel Cer, Madhuri Shanbhogue, Iftekhar Naim, Gustavo Hernández Ábrego, Zhe Li, Kaifeng Chen, Henrique Schechter Vera, et al.
+
+</span>
+<span class="ltx_bibblock">Gemini embedding: Generalizable embeddings from gemini.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2503.07891</em>, 2025b.
+
+</span>
+</li>
+<li id="bib.bib10" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Li et al. (2024)</span>
+<span class="ltx_bibblock">
+Mingxin Li, Zhijie Nie, Yanzhao Zhang, Dingkun Long, Richong Zhang, and Pengjun Xie.
+
+</span>
+<span class="ltx_bibblock">Improving general text embedding model: Tackling task conflict and data imbalance through model merging.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2410.15035</em>, 2024.
+
+</span>
+</li>
+<li id="bib.bib11" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Li et al. (2023)</span>
+<span class="ltx_bibblock">
+Zehan Li, Xin Zhang, Yanzhao Zhang, Dingkun Long, Pengjun Xie, and Meishan Zhang.
+
+</span>
+<span class="ltx_bibblock">Towards general text embeddings with multi-stage contrastive learning, 2023.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://arxiv.org/abs/2308.03281" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://arxiv.org/abs/2308.03281</a>.
+
+</span>
+</li>
+<li id="bib.bib12" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Ma et al. (2023)</span>
+<span class="ltx_bibblock">
+Xueguang Ma, Xinyu Zhang, Ronak Pradeep, and Jimmy Lin.
+
+</span>
+<span class="ltx_bibblock">Zero-shot listwise document reranking with a large language model.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2305.02156</em>, 2023.
+
+</span>
+</li>
+<li id="bib.bib13" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Muennighoff et al. (2023)</span>
+<span class="ltx_bibblock">
+Niklas Muennighoff, Nouamane Tazi, Loic Magne, and Nils Reimers.
+
+</span>
+<span class="ltx_bibblock">MTEB: Massive text embedding benchmark.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Proceedings of the 17th Conference of the European Chapter of the Association for Computational Linguistics</em>, pp.  2014–2037, Dubrovnik, Croatia, May 2023. Association for Computational Linguistics.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://aclanthology.org/2023.eacl-main.148/" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://aclanthology.org/2023.eacl-main.148/</a>.
+
+</span>
+</li>
+<li id="bib.bib14" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Muennighoff et al. (2025)</span>
+<span class="ltx_bibblock">
+Niklas Muennighoff, Hongjin SU, Liang Wang, Nan Yang, Furu Wei, Tao Yu, Amanpreet Singh, and Douwe Kiela.
+
+</span>
+<span class="ltx_bibblock">Generative representational instruction tuning.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">The Thirteenth International Conference on Learning Representations</em>, 2025.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://openreview.net/forum?id=BC4lIvfSzv" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://openreview.net/forum?id=BC4lIvfSzv</a>.
+
+</span>
+</li>
+<li id="bib.bib15" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Oord et al. (2018)</span>
+<span class="ltx_bibblock">
+Aaron van den Oord, Yazhe Li, and Oriol Vinyals.
+
+</span>
+<span class="ltx_bibblock">Representation learning with contrastive predictive coding.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:1807.03748</em>, 2018.
+
+</span>
+</li>
+<li id="bib.bib16" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Pradeep et al. (2023)</span>
+<span class="ltx_bibblock">
+Ronak Pradeep, Sahel Sharifymoghaddam, and Jimmy Lin.
+
+</span>
+<span class="ltx_bibblock">Rankvicuna: Zero-shot listwise document reranking with open-source large language models.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2309.15088</em>, 2023.
+
+</span>
+</li>
+<li id="bib.bib17" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Reimers &amp; Gurevych (2019)</span>
+<span class="ltx_bibblock">
+Nils Reimers and Iryna Gurevych.
+
+</span>
+<span class="ltx_bibblock">Sentence-BERT: Sentence embeddings using Siamese BERT-networks.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)</em>, pp.  3982–3992, Hong Kong, China, November 2019. Association for Computational Linguistics.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://aclanthology.org/D19-1410/" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://aclanthology.org/D19-1410/</a>.
+
+</span>
+</li>
+<li id="bib.bib18" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Su et al. (2023)</span>
+<span class="ltx_bibblock">
+Hongjin Su, Weijia Shi, Jungo Kasai, Yizhong Wang, Yushi Hu, Mari Ostendorf, Wen-tau Yih, Noah A Smith, Luke Zettlemoyer, and Tao Yu.
+
+</span>
+<span class="ltx_bibblock">One embedder, any task: Instruction-finetuned text embeddings.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Findings of the Association for Computational Linguistics: ACL 2023</em>, pp.  1102–1121, 2023.
+
+</span>
+</li>
+<li id="bib.bib19" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Wang et al. (2022)</span>
+<span class="ltx_bibblock">
+Liang Wang, Nan Yang, Xiaolong Huang, Binxing Jiao, Linjun Yang, Daxin Jiang, Rangan Majumder, and Furu Wei.
+
+</span>
+<span class="ltx_bibblock">Text embeddings by weakly-supervised contrastive pre-training, 2022.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://arxiv.org/abs/2212.03533" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://arxiv.org/abs/2212.03533</a>.
+
+</span>
+</li>
+<li id="bib.bib20" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Wang et al. (2024)</span>
+<span class="ltx_bibblock">
+Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Majumder, and Furu Wei.
+
+</span>
+<span class="ltx_bibblock">Improving text embeddings with large language models.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)</em>, pp.  11897–11916, Bangkok, Thailand, August 2024. Association for Computational Linguistics.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://aclanthology.org/2024.acl-long.642/" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://aclanthology.org/2024.acl-long.642/</a>.
+
+</span>
+</li>
+<li id="bib.bib21" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Weller et al. (2024)</span>
+<span class="ltx_bibblock">
+Orion Weller, Benjamin Chang, Sean MacAvaney, Kyle Lo, Arman Cohan, Benjamin Van Durme, Dawn Lawrie, and Luca Soldaini.
+
+</span>
+<span class="ltx_bibblock">Followir: Evaluating and teaching information retrieval models to follow instructions.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2403.15246</em>, 2024.
+
+</span>
+</li>
+<li id="bib.bib22" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Xiao et al. (2024)</span>
+<span class="ltx_bibblock">
+Shitao Xiao, Zheng Liu, Peitian Zhang, Niklas Muennighoff, Defu Lian, and Jian-Yun Nie.
+
+</span>
+<span class="ltx_bibblock">C-pack: Packed resources for general chinese embeddings.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval</em>, SIGIR ’24, pp.  641–649, New York, NY, USA, 2024. Association for Computing Machinery.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://doi.org/10.1145/3626772.3657878" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://doi.org/10.1145/3626772.3657878</a>.
+
+</span>
+</li>
+<li id="bib.bib23" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Yang et al. (2025)</span>
+<span class="ltx_bibblock">
+An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, et al.
+
+</span>
+<span class="ltx_bibblock">Qwen3 technical report.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2505.09388</em>, 2025.
+
+</span>
+</li>
+<li id="bib.bib24" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Zhang et al. (2024a)</span>
+<span class="ltx_bibblock">
+Longhui Zhang, Yanzhao Zhang, Dingkun Long, Pengjun Xie, Meishan Zhang, and Min Zhang.
+
+</span>
+<span class="ltx_bibblock">A two-stage adaptation of large language models for text ranking.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Findings of the Association for Computational Linguistics ACL 2024</em>, pp.  11880–11891, 2024a.
+
+</span>
+</li>
+<li id="bib.bib25" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Zhang et al. (2024b)</span>
+<span class="ltx_bibblock">
+Xin Zhang, Yanzhao Zhang, Dingkun Long, Wen Xie, Ziqi Dai, Jialong Tang, Huan Lin, Baosong Yang, Pengjun Xie, Fei Huang, Meishan Zhang, Wenjie Li, and Min Zhang.
+
+</span>
+<span class="ltx_bibblock">mGTE: Generalized long-context text representation and reranking models for multilingual text retrieval.
+
+</span>
+<span class="ltx_bibblock">In Franck Dernoncourt, Daniel Preoţiuc-Pietro, and Anastasia Shimorina (eds.), <em class="ltx_emph ltx_font_italic">Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing: Industry Track</em>, pp.  1393–1412, Miami, Florida, US, November 2024b. Association for Computational Linguistics.
+
+</span>
+<span class="ltx_bibblock">doi: <span class="ltx_ref ltx_nolink ltx_Url ltx_ref_self">10.18653/v1/2024.emnlp-industry.103</span>.
+
+</span>
+<span class="ltx_bibblock">URL <a target="_blank" href="https://aclanthology.org/2024.emnlp-industry.103/" title="" class="ltx_ref ltx_url ltx_font_typewriter">https://aclanthology.org/2024.emnlp-industry.103/</a>.
+
+</span>
+</li>
+<li id="bib.bib26" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Zhao et al. (2024)</span>
+<span class="ltx_bibblock">
+Wayne Xin Zhao, Jing Liu, Ruiyang Ren, and Ji-Rong Wen.
+
+</span>
+<span class="ltx_bibblock">Dense text retrieval based on pretrained language models: A survey.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">ACM Transactions on Information Systems</em>, 42(4):1–60, 2024.
+
+</span>
+</li>
+<li id="bib.bib27" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Zhao et al. (2023)</span>
+<span class="ltx_bibblock">
+Xiangyu Zhao, Maolin Wang, Xinjian Zhao, Jiansheng Li, Shucheng Zhou, Dawei Yin, Qing Li, Jiliang Tang, and Ruocheng Guo.
+
+</span>
+<span class="ltx_bibblock">Embedding in recommender systems: A survey.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic">arXiv preprint arXiv:2310.18608</em>, 2023.
+
+</span>
+</li>
+<li id="bib.bib28" class="ltx_bibitem">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Zhuang et al. (2024)</span>
+<span class="ltx_bibblock">
+Shengyao Zhuang, Honglei Zhuang, Bevan Koopman, and Guido Zuccon.
+
+</span>
+<span class="ltx_bibblock">A setwise approach for effective and highly efficient zero-shot ranking with large language models.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic">Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval</em>, pp.  38–47, 2024.
+
+</span>
+</li>
+</ul>
+</section>
+<div class="ltx_pagination ltx_role_newpage"></div>
+<section id="A1" class="ltx_appendix">
+<h2 class="ltx_title ltx_title_appendix">
+<span class="ltx_tag ltx_tag_appendix">Appendix A </span>Appendix</h2>
+
+<section id="A1.SS1" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.1 </span>Synthetic Data</h3>
+
+<div id="A1.SS1.p1" class="ltx_para ltx_noindent">
+<p class="ltx_p">We construct four types of synthetic data—retrieval, bitext mining, semantic textual similarity, and classification to enable the model to adapt to various similarity tasks during pre-training. To ensure both multilingual and cross-lingual diversity, the data is generated using Qwen3 32B. Below is an example of a synthetic retrieval text pair. The retrieval data is synthesized using a document-to-query approach. We collect a multilingual corpus from the pre-training corpus of the Qwen3 base model to serve as the document source. A two-stage generation pipeline is then applied, consisting of: (1) configuration and (2) query generation. In the configuration stage, we use large language models (LLMs) to determine the “Question Type”, “Difficulty”, and “Character” for the synthetic query. The candidate characters are retrieved from Persona Hub <cite class="ltx_cite ltx_citemacro_citep">(Ge et al., <a href="#bib.bib3" title="" class="ltx_ref">2024</a>)</cite>, selecting the top five most relevant to the given document. This step aims to enhance the diversity of the generated queries. The template used is as follows:</p>
+</div>
+<div id="A1.SS1.p2" class="ltx_para ltx_noindent">
+<span class="ltx_inline-block"><svg id="A1.SS1.p2.pic1" class="ltx_picture" height="89.54" overflow="visible" version="1.1" viewBox="0 0 600 89.54" width="600"><g transform="translate(0,89.54) matrix(1 0 0 -1 0 0)" fill="#000000" stroke="#000000" stroke-width="0.4pt"><g fill="#B3B3B3" fill-opacity="1.0"><path d="M 0 3.32 L 0 86.22 C 0 88.06 1.49 89.54 3.32 89.54 L 596.68 89.54 C 598.51 89.54 600 88.06 600 86.22 L 600 3.32 C 600 1.49 598.51 0 596.68 0 L 3.32 0 C 1.49 0 0 1.49 0 3.32 Z" style="stroke:none"></path></g><g fill="#ECECEC" fill-opacity="1.0"><path d="M 0.55 3.32 L 0.55 86.22 C 0.55 87.75 1.79 88.99 3.32 88.99 L 596.68 88.99 C 598.21 88.99 599.45 87.75 599.45 86.22 L 599.45 3.32 C 599.45 1.79 598.21 0.55 596.68 0.55 L 3.32 0.55 C 1.79 0.55 0.55 1.79 0.55 3.32 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 10.03 62.91)"><foreignObject width="579.95" height="69.49" transform="matrix(1 0 0 -1 0 16.6)" overflow="visible" style="--fo_width :41.91em;--fo_height:1.2em;--fo_depth :3.82em;" color="#000000"><span class="ltx_foreignobject_container"><span class="ltx_foreignobject_content">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" style="width:39.92em;">
+<span class="ltx_p"><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:0.0pt;"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;"><span class="ltx_text ltx_inline-block" style="width:469.8pt;">Given a **Passage** and **Character**, select the appropriate option from three fields: Character, Question_Type, Difficulty, and return the output in JSON format.</span></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">First, select the Character who are likely to be interested in the Passage from the candidates. Then select the Question_Type that the Character might ask about the Passage; Finally, choose the Difficulty of the possible question based on the Passage, the Character, and the Question_Type.</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Character: Given by input **Character**</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Question_Type:</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- keywords: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- acquire_knowledge: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- summary: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- yes_or_no: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- background: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Difficulty:</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- high_school: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- university: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- phd: ...</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Here are some examples</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;Example1&gt; &lt;Example2&gt; &lt;Example3&gt;</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Now, generate the **output** based on the **Passage** and **Character** from user, the **Passage** will be in {language} language and the **Character** will be in English.</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Ensure to generate only the JSON output with content in English.</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">**Passage**:</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">{passage}</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">**Character**:</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">{character}</span></span>
+</span></span></span></foreignObject></g></g></svg></span>
+</div>
+<div id="A1.SS1.p3" class="ltx_para ltx_noindent">
+<p class="ltx_p">In the query generation stage, we use the configuration selected in the first stage to guide the generation of queries. Additionally, we explicitly specify the desired length and language of the generated query. The template used is as follows:</p>
+</div>
+<div id="A1.SS1.p4" class="ltx_para ltx_noindent">
+<span class="ltx_inline-block"><svg id="A1.SS1.p4.pic1" class="ltx_picture" height="89.54" overflow="visible" version="1.1" viewBox="0 0 600 89.54" width="600"><g transform="translate(0,89.54) matrix(1 0 0 -1 0 0)" fill="#000000" stroke="#000000" stroke-width="0.4pt"><g fill="#B3B3B3" fill-opacity="1.0"><path d="M 0 3.32 L 0 86.22 C 0 88.06 1.49 89.54 3.32 89.54 L 596.68 89.54 C 598.51 89.54 600 88.06 600 86.22 L 600 3.32 C 600 1.49 598.51 0 596.68 0 L 3.32 0 C 1.49 0 0 1.49 0 3.32 Z" style="stroke:none"></path></g><g fill="#ECECEC" fill-opacity="1.0"><path d="M 0.55 3.32 L 0.55 86.22 C 0.55 87.75 1.79 88.99 3.32 88.99 L 596.68 88.99 C 598.21 88.99 599.45 87.75 599.45 86.22 L 599.45 3.32 C 599.45 1.79 598.21 0.55 596.68 0.55 L 3.32 0.55 C 1.79 0.55 0.55 1.79 0.55 3.32 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 10.03 62.91)"><foreignObject width="579.95" height="69.49" transform="matrix(1 0 0 -1 0 16.6)" overflow="visible" style="--fo_width :41.91em;--fo_height:1.2em;--fo_depth :3.82em;" color="#000000"><span class="ltx_foreignobject_container"><span class="ltx_foreignobject_content">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" style="width:39.92em;">
+<span class="ltx_p"><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:0.0pt;"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;"><span class="ltx_text ltx_inline-block" style="width:469.8pt;">Given a **Character**, **Passage**, and **Requirement**, generate a query from the **Character**’s perspective that satisfies the **Requirement** and can be used to retrieve the **Passage**. Please return the result in JSON format.</span></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Here is an example:</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">&lt;example&gt;</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Now, generate the **output** based on the **Character**, **Passage** and **Requirement** from user, the **Passage** will be in {corpus_language} language, the **Character** and **Requirement** will be in English.</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">Ensure to generate only the JSON output, with the key in English and the value in {queries_language} language.</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_inline-block" style="width:469.8pt;"></span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">**Character**</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">{character}</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">**Passage**</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">{passage}</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">**Requirment**</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- Type: {type};</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- Difficulty: {difficulty};</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- Length: the length of the generated sentences should be {length} words;</span></span>
+<span class="ltx_p" style="width:469.8pt;"><span class="ltx_text ltx_font_typewriter"></span><span class="ltx_text ltx_font_typewriter ltx_inline-block" style="width:469.8pt;">- Languange: the language in which the results are generated should be {language} language;</span></span>
+</span></span></span></foreignObject></g></g></svg></span>
+</div>
+<figure id="A1.T6" class="ltx_table">
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer" style="width:433.6pt;height:147.3pt;vertical-align:-147.3pt;"><span class="ltx_transformed_inner" style="transform:translate(-7.5pt,0.0pt) scale(0.966402080685745,0.966402080685745) ;">
+<table class="ltx_tabular ltx_guessed_headers ltx_align_middle">
+<thead class="ltx_thead">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_column ltx_th_row ltx_border_r ltx_border_tt"><span class="ltx_text ltx_font_bold">Stage</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_r ltx_border_tt"><span class="ltx_text ltx_font_bold">Dataset</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt"><span class="ltx_text ltx_font_bold">Size</span></th>
+</tr>
+</thead>
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_r ltx_border_t">Weakly Supervised Pre-Training</th>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">Synthetic Data</td>
+<td class="ltx_td ltx_align_center ltx_border_t">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><math id="A1.T6.m1" class="ltx_Math" alttext="\sim 150\text{M}" display="inline"><semantics><mrow><mi></mi><mo>∼</mo><mrow><mn>150</mn><mo lspace="0em" rspace="0em">​</mo><mtext>M</mtext></mrow></mrow><annotation encoding="application/x-tex">\sim 150\text{M}</annotation></semantics></math></td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_bb ltx_border_r ltx_border_t">Supervised Fine Tuning</th>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r ltx_border_t">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">MS MARCO, NQ, HotpotQA, NLI,</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Dureader, T<sup class="ltx_sup">2</sup>-Ranking, SimCLUE,</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">MIRACL, MLDR, Mr.TyDi,</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Multi-CPR, CodeSearchNet .etc</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">+ High-quality Synthetic Data</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_t">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Labeled Data: <math id="A1.T6.m3" class="ltx_Math" alttext="\sim 7\text{M}" display="inline"><semantics><mrow><mi></mi><mo>∼</mo><mrow><mn>7</mn><mo lspace="0em" rspace="0em">​</mo><mtext>M</mtext></mrow></mrow><annotation encoding="application/x-tex">\sim 7\text{M}</annotation></semantics></math>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Synthetic Data: <math id="A1.T6.m4" class="ltx_Math" alttext="\sim 12\text{M}" display="inline"><semantics><mrow><mi></mi><mo>∼</mo><mrow><mn>12</mn><mo lspace="0em" rspace="0em">​</mo><mtext>M</mtext></mrow></mrow><annotation encoding="application/x-tex">\sim 12\text{M}</annotation></semantics></math>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 6: </span>Statistics of training data utilized at each stage.</figcaption>
+</figure>
+</section>
+<section id="A1.SS2" class="ltx_subsection">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.2 </span>Detail Results</h3>
+
+<figure id="A1.T7" class="ltx_table">
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer" style="width:433.6pt;height:174.3pt;vertical-align:-174.3pt;"><span class="ltx_transformed_inner" style="transform:translate(-83.0pt,0.0pt) scale(0.723057993980021,0.723057993980021) ;">
+<table class="ltx_tabular ltx_align_middle">
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold">MTEB(eng, v2)</span></td>
+<td class="ltx_td ltx_align_center ltx_border_tt"><span class="ltx_text ltx_font_bold">Param</span></td>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Mean</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">(Task)</span></td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Mean</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">(Type)</span></td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Class-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">ification</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Clus-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">tering</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Pair</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Class.</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">Rerank</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">Retrieval</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">STS</td>
+<td class="ltx_td ltx_align_center ltx_border_tt">Summ.</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">multilingual-e5-large-instruct</td>
+<td class="ltx_td ltx_align_center ltx_border_t">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_t">65.53</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">61.21</td>
+<td class="ltx_td ltx_align_center ltx_border_t">75.54</td>
+<td class="ltx_td ltx_align_center ltx_border_t">49.89</td>
+<td class="ltx_td ltx_align_center ltx_border_t">86.24</td>
+<td class="ltx_td ltx_align_center ltx_border_t">48.74</td>
+<td class="ltx_td ltx_align_center ltx_border_t">53.47</td>
+<td class="ltx_td ltx_align_center ltx_border_t">84.72</td>
+<td class="ltx_td ltx_align_center ltx_border_t">29.89</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">NV-Embed-v2</td>
+<td class="ltx_td ltx_align_center">7.8B</td>
+<td class="ltx_td ltx_align_center">69.81</td>
+<td class="ltx_td ltx_align_center ltx_border_r">65.00</td>
+<td class="ltx_td ltx_align_center">87.19</td>
+<td class="ltx_td ltx_align_center">47.66</td>
+<td class="ltx_td ltx_align_center">88.69</td>
+<td class="ltx_td ltx_align_center">49.61</td>
+<td class="ltx_td ltx_align_center">62.84</td>
+<td class="ltx_td ltx_align_center">83.82</td>
+<td class="ltx_td ltx_align_center">35.21</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">GritLM-7B</td>
+<td class="ltx_td ltx_align_center">7.2B</td>
+<td class="ltx_td ltx_align_center">67.07</td>
+<td class="ltx_td ltx_align_center ltx_border_r">63.22</td>
+<td class="ltx_td ltx_align_center">81.25</td>
+<td class="ltx_td ltx_align_center">50.82</td>
+<td class="ltx_td ltx_align_center">87.29</td>
+<td class="ltx_td ltx_align_center">49.59</td>
+<td class="ltx_td ltx_align_center">54.95</td>
+<td class="ltx_td ltx_align_center">83.03</td>
+<td class="ltx_td ltx_align_center">35.65</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">gte-Qwen2-1.5B-instruct</td>
+<td class="ltx_td ltx_align_center">1.5B</td>
+<td class="ltx_td ltx_align_center">67.20</td>
+<td class="ltx_td ltx_align_center ltx_border_r">63.26</td>
+<td class="ltx_td ltx_align_center">85.84</td>
+<td class="ltx_td ltx_align_center">53.54</td>
+<td class="ltx_td ltx_align_center">87.52</td>
+<td class="ltx_td ltx_align_center">49.25</td>
+<td class="ltx_td ltx_align_center">50.25</td>
+<td class="ltx_td ltx_align_center">82.51</td>
+<td class="ltx_td ltx_align_center">33.94</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">stella_en_1.5B_v5</td>
+<td class="ltx_td ltx_align_center">1.5B</td>
+<td class="ltx_td ltx_align_center">69.43</td>
+<td class="ltx_td ltx_align_center ltx_border_r">65.32</td>
+<td class="ltx_td ltx_align_center">89.38</td>
+<td class="ltx_td ltx_align_center">57.06</td>
+<td class="ltx_td ltx_align_center">88.02</td>
+<td class="ltx_td ltx_align_center">50.19</td>
+<td class="ltx_td ltx_align_center">52.42</td>
+<td class="ltx_td ltx_align_center">83.27</td>
+<td class="ltx_td ltx_align_center">36.91</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">gte-Qwen2-7B-instruct</td>
+<td class="ltx_td ltx_align_center">7.6B</td>
+<td class="ltx_td ltx_align_center">70.72</td>
+<td class="ltx_td ltx_align_center ltx_border_r">65.77</td>
+<td class="ltx_td ltx_align_center">88.52</td>
+<td class="ltx_td ltx_align_center">58.97</td>
+<td class="ltx_td ltx_align_center">85.9</td>
+<td class="ltx_td ltx_align_center">50.47</td>
+<td class="ltx_td ltx_align_center">58.09</td>
+<td class="ltx_td ltx_align_center">82.69</td>
+<td class="ltx_td ltx_align_center">35.74</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">gemini-embedding-exp-03-07</td>
+<td class="ltx_td ltx_align_center">-</td>
+<td class="ltx_td ltx_align_center">73.3</td>
+<td class="ltx_td ltx_align_center ltx_border_r">67.67</td>
+<td class="ltx_td ltx_align_center">90.05</td>
+<td class="ltx_td ltx_align_center">59.39</td>
+<td class="ltx_td ltx_align_center">87.7</td>
+<td class="ltx_td ltx_align_center">48.59</td>
+<td class="ltx_td ltx_align_center">64.35</td>
+<td class="ltx_td ltx_align_center">85.29</td>
+<td class="ltx_td ltx_align_center">38.28</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">Qwen3-Embedding-0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_t">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_t">70.70</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">64.88</td>
+<td class="ltx_td ltx_align_center ltx_border_t">85.76</td>
+<td class="ltx_td ltx_align_center ltx_border_t">54.05</td>
+<td class="ltx_td ltx_align_center ltx_border_t">84.37</td>
+<td class="ltx_td ltx_align_center ltx_border_t">48.18</td>
+<td class="ltx_td ltx_align_center ltx_border_t">61.83</td>
+<td class="ltx_td ltx_align_center ltx_border_t">86.57</td>
+<td class="ltx_td ltx_align_center ltx_border_t">33.43</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">Qwen3-Embedding-4B</td>
+<td class="ltx_td ltx_align_center">4B</td>
+<td class="ltx_td ltx_align_center">74.60</td>
+<td class="ltx_td ltx_align_center ltx_border_r">68.09</td>
+<td class="ltx_td ltx_align_center">89.84</td>
+<td class="ltx_td ltx_align_center">57.51</td>
+<td class="ltx_td ltx_align_center">87.01</td>
+<td class="ltx_td ltx_align_center">50.76</td>
+<td class="ltx_td ltx_align_center">68.46</td>
+<td class="ltx_td ltx_align_center">88.72</td>
+<td class="ltx_td ltx_align_center">34.39</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb">Qwen3-Embedding-8B</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">8B</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">75.22</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r">68.70</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">90.43</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">58.57</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">87.52</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">51.56</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">69.44</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">88.58</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">34.83</td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 7: </span>
+Results on MTEB(eng, v2) <cite class="ltx_cite ltx_citemacro_citep">(Muennighoff et al., <a href="#bib.bib13" title="" class="ltx_ref">2023</a>)</cite>. We compare models from the online leaderboard.
+</figcaption>
+</figure>
+<figure id="A1.T8" class="ltx_table">
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer" style="width:433.6pt;height:131.5pt;vertical-align:-131.5pt;"><span class="ltx_transformed_inner" style="transform:translate(-61.8pt,0.0pt) scale(0.778286123562315,0.778286123562315) ;">
+<table class="ltx_tabular ltx_guessed_headers ltx_align_middle">
+<thead class="ltx_thead">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_column ltx_border_tt"><span class="ltx_text ltx_font_bold">MTEB(cmn, v1)</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt"><span class="ltx_text ltx_font_bold">Param</span></th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Mean</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">(Task)</span></td>
+</tr>
+</table>
+</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_r ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">Mean</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center"><span class="ltx_text ltx_font_bold">(Type)</span></td>
+</tr>
+</table>
+</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Class-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">ification</td>
+</tr>
+</table>
+</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Clus-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">tering</td>
+</tr>
+</table>
+</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Pair</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_nopad_r ltx_align_center">Class.</td>
+</tr>
+</table>
+</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt">Rerank</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt">Retrieval</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_column ltx_border_tt">STS</th>
+</tr>
+</thead>
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">multilingual-e5-large-instruct</td>
+<td class="ltx_td ltx_align_center ltx_border_t">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_t">58.08</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">58.24</td>
+<td class="ltx_td ltx_align_center ltx_border_t">69.80</td>
+<td class="ltx_td ltx_align_center ltx_border_t">48.23</td>
+<td class="ltx_td ltx_align_center ltx_border_t">64.52</td>
+<td class="ltx_td ltx_align_center ltx_border_t">57.45</td>
+<td class="ltx_td ltx_align_center ltx_border_t">63.65</td>
+<td class="ltx_td ltx_align_center ltx_border_t">45.81</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">gte-Qwen2-7B-instruct</td>
+<td class="ltx_td ltx_align_center">7.6B</td>
+<td class="ltx_td ltx_align_center">71.62</td>
+<td class="ltx_td ltx_align_center ltx_border_r">72.19</td>
+<td class="ltx_td ltx_align_center">75.77</td>
+<td class="ltx_td ltx_align_center">66.06</td>
+<td class="ltx_td ltx_align_center">81.16</td>
+<td class="ltx_td ltx_align_center">69.24</td>
+<td class="ltx_td ltx_align_center">75.70</td>
+<td class="ltx_td ltx_align_center">65.20</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">gte-Qwen2-1.5B-instruct</td>
+<td class="ltx_td ltx_align_center">1.5B</td>
+<td class="ltx_td ltx_align_center">67.12</td>
+<td class="ltx_td ltx_align_center ltx_border_r">67.79</td>
+<td class="ltx_td ltx_align_center">72.53</td>
+<td class="ltx_td ltx_align_center">54.61</td>
+<td class="ltx_td ltx_align_center">79.5</td>
+<td class="ltx_td ltx_align_center">68.21</td>
+<td class="ltx_td ltx_align_center">71.86</td>
+<td class="ltx_td ltx_align_center">60.05</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">Qwen3-Embedding-0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_t">0.6B</td>
+<td class="ltx_td ltx_align_center ltx_border_t">66.33</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">67.44</td>
+<td class="ltx_td ltx_align_center ltx_border_t">71.40</td>
+<td class="ltx_td ltx_align_center ltx_border_t">68.74</td>
+<td class="ltx_td ltx_align_center ltx_border_t">76.42</td>
+<td class="ltx_td ltx_align_center ltx_border_t">62.58</td>
+<td class="ltx_td ltx_align_center ltx_border_t">71.03</td>
+<td class="ltx_td ltx_align_center ltx_border_t">54.52</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">Qwen3-Embedding-4B</td>
+<td class="ltx_td ltx_align_center">4B</td>
+<td class="ltx_td ltx_align_center">72.26</td>
+<td class="ltx_td ltx_align_center ltx_border_r">73.50</td>
+<td class="ltx_td ltx_align_center">75.46</td>
+<td class="ltx_td ltx_align_center">77.89</td>
+<td class="ltx_td ltx_align_center">83.34</td>
+<td class="ltx_td ltx_align_center">66.05</td>
+<td class="ltx_td ltx_align_center">77.03</td>
+<td class="ltx_td ltx_align_center">61.26</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb">Qwen3-Embedding-8B</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">8B</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">73.84</td>
+<td class="ltx_td ltx_align_center ltx_border_bb ltx_border_r">75.00</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">76.97</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">80.08</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">84.23</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">66.99</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">78.21</td>
+<td class="ltx_td ltx_align_center ltx_border_bb">63.53</td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 8: </span>
+Results on C-MTEB <cite class="ltx_cite ltx_citemacro_citep">(Xiao et al., <a href="#bib.bib22" title="" class="ltx_ref">2024</a>)</cite> (MTEB(cmn, v1).
+</figcaption>
+</figure>
+<figure id="A1.T9" class="ltx_table">
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer" style="width:433.6pt;height:189.8pt;vertical-align:-189.8pt;"><span class="ltx_transformed_inner" style="transform:translate(-140.7pt,0.0pt) scale(0.606507752727908,0.606507752727908) ;">
+<table class="ltx_tabular ltx_guessed_headers ltx_align_middle">
+<tbody class="ltx_tbody">
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">MTEB(Code, v1)</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">Avg.</th>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Apps</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">COIR-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">CodeSearch-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Net</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Code-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Edit-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Search</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Code-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Feedback-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">MT</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Code-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Feedback-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">ST</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Code-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">SearchNet-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">CCR</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Code-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">SearchNet</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Code-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Trans-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Ocean-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Contest</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Code-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Trans-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Ocean-DL</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">CosQA</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Stack-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Overflow-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">QA</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_align_center ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Synthetic-</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">Text2SQL</td>
+</tr>
+</table>
+</td>
+<td class="ltx_td ltx_border_tt" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">BGE<math id="A1.T9.m1" class="ltx_Math" alttext="{}_{\text{multilingual}}" display="inline"><semantics><msub><mi></mi><mtext>multilingual</mtext></msub><annotation encoding="application/x-tex">{}_{\text{multilingual}}</annotation></semantics></math>
+</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">62.04</th>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">22.93</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">68.14</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">60.48</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">60.52</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">76.70</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">73.23</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">83.43</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">86.84</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">32.64</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">27.93</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">92.93</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">58.67</td>
+<td class="ltx_td ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:2.0pt;padding-right:2.0pt;">NV-Embed-v2</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">63.74</th>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">29.72</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">61.85</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">73.96</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">60.27</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">81.72</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">68.82</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">86.61</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">89.14</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">33.40</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">34.82</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">92.36</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">60.90</td>
+<td class="ltx_td" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:2.0pt;padding-right:2.0pt;">gte-Qwen2-7B-instruct</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">62.17</th>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">28.39</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">71.79</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">67.06</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">57.66</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">85.15</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">66.24</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">86.96</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">81.83</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">32.17</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">31.26</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">84.34</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">53.22</td>
+<td class="ltx_td" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:2.0pt;padding-right:2.0pt;">gte-Qwen2-1.5B-instruct</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">61.98</th>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">28.91</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">71.56</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">59.60</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">49.92</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">81.92</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">72.08</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">91.08</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">79.02</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">32.73</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">32.23</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">90.27</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">54.49</td>
+<td class="ltx_td" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">BGE-M3 (Dense)</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">58.22</th>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">14.77</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">58.07</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">59.83</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">47.86</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">69.27</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">53.55</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">61.98</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">86.22</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">29.37</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">27.36</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">80.71</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">49.65</td>
+<td class="ltx_td ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:2.0pt;padding-right:2.0pt;">Jina-v3</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">58.85</th>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">28.99</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">67.83</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">57.24</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">59.66</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">78.13</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">54.17</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">85.50</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">77.37</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">30.91</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">35.15</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">90.79</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">41.49</td>
+<td class="ltx_td" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">Qwen3-Embedding-0.6B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">75.41</th>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">75.34</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">84.69</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">64.42</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">90.82</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">86.39</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">91.72</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">91.01</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">86.05</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">31.36</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">36.48</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">89.99</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">76.74</td>
+<td class="ltx_td ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:2.0pt;padding-right:2.0pt;">Qwen3-Embedding-4B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">80.06</th>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">89.18</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">87.93</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">76.49</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">93.21</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">89.51</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">95.59</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">92.34</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">90.99</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">35.04</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">37.98</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">94.32</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">78.21</td>
+<td class="ltx_td" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:2.0pt;padding-right:2.0pt;">Qwen3-Embedding-8B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">80.68</th>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">91.07</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">89.51</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">76.97</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">93.70</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">89.93</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">96.35</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">92.66</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">93.73</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">32.81</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">38.04</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">94.75</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">78.75</td>
+<td class="ltx_td" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">Qwen3-Reranker-0.6B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">73.42</th>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">69.43</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">85.09</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">72.37</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">83.83</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">78.05</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">94.76</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">88.8</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">84.69</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">33.94</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">36.83</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">93.24</td>
+<td class="ltx_td ltx_align_center ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;">62.48</td>
+<td class="ltx_td ltx_border_t" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row" style="padding-left:2.0pt;padding-right:2.0pt;">Qwen3-Reranker-4B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">81.20</th>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">94.25</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">90.91</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">82.53</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">95.25</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">88.54</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">97.58</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">92.48</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">93.66</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">36.78</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">35.14</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">97.11</td>
+<td class="ltx_td ltx_align_center" style="padding-left:2.0pt;padding-right:2.0pt;">75.06</td>
+<td class="ltx_td" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+<tr class="ltx_tr">
+<th class="ltx_td ltx_align_left ltx_th ltx_th_row ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">Qwen3-Reranker-8B</th>
+<th class="ltx_td ltx_align_center ltx_th ltx_th_row ltx_border_bb ltx_border_r" style="padding-left:2.0pt;padding-right:2.0pt;">81.22</th>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">94.55</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">91.88</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">84.58</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">95.64</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">88.43</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">95.67</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">92.78</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">90.83</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">34.89</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">37.43</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">97.3</td>
+<td class="ltx_td ltx_align_center ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;">73.4</td>
+<td class="ltx_td ltx_border_bb" style="padding-left:2.0pt;padding-right:2.0pt;"></td>
+</tr>
+</tbody>
+</table>
+</span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 9: </span>
+Performance on <span class="ltx_text ltx_font_typewriter">MTEB(Code, v1)</span> <cite class="ltx_cite ltx_citemacro_citep">(Enevoldsen et al., <a href="#bib.bib2" title="" class="ltx_ref">2025</a>)</cite>. We report nDCG@10 scores.
+</figcaption>
+</figure>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</section>
+</section>
+</article>
+</body>
+</html>
