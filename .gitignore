@@ -44,3 +44,14 @@ Thumbs.db
 # ── Local env ───────────────────────────────────────────────
 .env
 .env.local
+
+# ── Audio / video assets (too large for git) ────────────────
+*.m4a
+*.mp3
+*.wav
+*.aac
+*.ogg
+*.flac
+*.mp4
+*.mov
+*.avi
