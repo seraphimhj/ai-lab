@@ -55,3 +55,7 @@ Thumbs.db
 *.mp4
 *.mov
 *.avi
+
+# ── Large binary docs (download on demand) ──────────────────
+*.pdf
+*.html
