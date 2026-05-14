@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-14
 type: entity
 tags: [model, open-source, llm, deeplearning]
-sources: [raw/papers/2302.13971-LLaMA-Open-and-Efficient-Foundation-Language-Models.html, raw/papers/2307.09288-LLaMA-2-Open-Foundation-Fine-Tuned-Chat-Models.html, raw/papers/2407.21783-Llama-3-Herd-of-Models.html]
+sources: [raw/papers/2302.13971-LLaMA-Open-and-Efficient-Foundation-Language-Models.html, raw/papers/2307.09288-LLaMA-2-Open-Foundation-Fine-Tuned-Chat-Models.html, raw/papers/2407.21783-Llama-3-Herd-of-Models.pdf]
 ---
 
 # LLaMA 系列
@@ -35,7 +35,7 @@ LLaMA 2 在 LLaMA 1 基础上进行了全面升级，首次提供商业友好许
 
 ## LLaMA 3 / 3.1（2024 年 7 月）
 
-LLaMA 3 代表了开源模型的最大规模尝试。[[raw/papers/2407.21783-Llama-3-Herd-of-Models.html]]
+LLaMA 3 代表了开源模型的最大规模尝试。[[raw/papers/2407.21783-Llama-3-Herd-of-Models.pdf]]
 
 - 参数规模：8B / 70B / 405B
 - 训练数据：15T+ Token（多语言，高质量数据策整）

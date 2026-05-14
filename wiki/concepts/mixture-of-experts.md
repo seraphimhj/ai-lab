@@ -1,10 +1,10 @@
 ---
 title: Mixture of Experts — 稀疏专家混合
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [architecture, efficiency, scaling]
-sources: [raw/papers/2401.04088-Mixtral-of-Experts.md]
+sources: [raw/papers/2401.04088-Mixtral-of-Experts.html]
 ---
 
 # Mixture of Experts — 稀疏专家混合
@@ -39,10 +39,14 @@ y = Σ G(x)_i × E_i(x)    # G: router, E: expert
 
 ### 典型配置（Mixtral 8×7B）
 
-- 8 个专家，每个 7B 参数
-- 总参数量：~47B
-- 每个激活 2 个专家，实际计算量 ≈ 13B
-- 效果接近 LLaMA 70B，但推理速度快数倍
+- 8 个专家，每层 8 个 feedforward block
+- 每个 token 在每层由 router 选择 2 个专家处理并加性组合输出
+- 总参数量：~47B，每 token 仅用 **13B 激活参数**
+- 上下文长度：**32k tokens**
+- 效果：超越或匹配 Llama 2 70B 和 GPT-3.5（所有评估基准）
+- 在数学、代码生成和多语言基准上大幅超越 Llama 2 70B
+- Mixtral 8×7B–Instruct 版本超越 GPT-3.5 Turbo、Claude-2.1、Gemini Pro（人类评估）
+- 开源许可：Apache 2.0
 
 ## 训练挑战
 
@@ -76,3 +80,4 @@ Router 容易倾向于只使用少数专家，导致：
 - [[model-quantization]] — 与 MoE 配合进一步压缩
 - [[flash-attention]] — MoE 模型训练依赖高效注意力
 - [[linear-attention]] — MoE + Linear Attention 可以进一步降低推理成本
+- [[instruction-tuning]] — Mixtral-Instruct 使用 SFT + DPO 进行指令微调

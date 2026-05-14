@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-10
 type: entity
 tags: [model, architecture, deeplearning, nlp]
-sources: [raw/papers/1706.03762-Attention Is All You Need.md]
+sources: [raw/papers/1706.03762-Attention Is All You Need.html]
 ---
 
 # Transformer 架构

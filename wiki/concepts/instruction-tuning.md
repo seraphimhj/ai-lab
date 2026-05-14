@@ -1,10 +1,10 @@
 ---
 title: 指令微调
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [training, alignment, nlp]
-sources: [raw/papers/2212.10560-Self-Instruct-Aligning-Language-Models-with-Self-Generated-I.md, raw/papers/2210.11416-Scaling-Instruction-Finetuned-Language-Models.md]
+sources: [raw/papers/2212.10560-Self-Instruct-Aligning-Language-Models-with-Self-Generated-I.html, raw/papers/2210.11416-Scaling-Instruction-Finetuned-Language-Models.html]
 ---
 
 # 指令微调
@@ -50,9 +50,13 @@ Self-Instruct 提出用 LLM 自己生成指令数据[[raw/papers/2212.10560-Self
 ## 规模效应
 
 Flan-T5 和 Flan-PaLM 的研究表明[[raw/papers/2210.11416-Scaling-Instruction-Finetuned-Language-Models.html]]：
+- Flan-PaLM 540B 在 1.8K 任务上微调，平均性能比 PaLM 540B 提升 **+9.4%**
+- 五-shot MMLU 达到 **75.2%**（当时 SOTA）
+- Flan-T5 checkpoints 在 few-shot 场景下甚至超过 PaLM 62B
 - 指令微调的效果随模型规模和任务数量增加而提升
 - 任务数量从 9 增加到 1836 时，性能持续提升
 - 指令微调的增益在大模型上更显著
+- 关键发现：在 CoT 数据上微调可以提升模型的 [[chain-of-thought]] 推理能力
 
 ## 相关概念
 

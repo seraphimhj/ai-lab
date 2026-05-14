@@ -2,7 +2,7 @@
 
 > Content catalog. Every wiki page listed under its type with a one-line summary.
 > Read this first to find relevant pages for any query.
-> Last updated: 2026-05-14 | Total pages: 73 (28 entities + 38 concepts + 7 comparisons)
+> Last updated: 2026-05-15 | Total pages: 74 (28 entities + 39 concepts + 7 comparisons)
 
 ## Entities
 
@@ -90,7 +90,8 @@
 
 ### Agent / 工具
 - [[react-agent]] — ReAct 推理+行动协同范式，Agent 基础
-- [[tool-use]] — LLM 工具使用，Toolformer 自主学会调用 API
+- [[tool-use]] — LLM 工具使用，Toolformer 自主学会调用 API + HuggingGPT 多模型编排
+- [[swe-agent]] — 软件工程 Agent，ACI 界面设计，SWE-bench SOTA
 - [[mcp-model-context-protocol]] — MCP 协议，AI 工具领域的「USB-C 标准」
 - [[agent-skills]] — 可复用工作流程，渐进式披露按需加载
 - [[context-engineering]] — 上下文工程，一切高级能力的本质都在上下文填充

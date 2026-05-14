@@ -1,10 +1,10 @@
 ---
 title: Self-RAG — 自我反思检索增强生成
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [retrieval, generation, agent]
-sources: [raw/papers/2310.11511-Self-RAG-Learning-to-Retrieve-Generate-and-Critique-through-Self-Reflection.md]
+sources: [raw/papers/2310.11511-Self-RAG-Learning-to-Retrieve-Generate-and-Critique-through-Self-Reflection.html, raw/papers/2401.15884-Corrective-Retrieval-Augmented-Generation.html]
 ---
 
 # Self-RAG — 自我反思检索增强生成
@@ -55,11 +55,30 @@ Input → [Retrieve?]
 
 ## 效果
 
-在多个基准测试上，Self-RAG 显著优于标准 RAG 和纯 LLM：
-- 提升事实准确性
-- 减少幻觉
-- 在不需要检索的场景中更高效
-- 更好的引用质量
+Self-RAG（7B 和 13B 参数）在六个任务上的表现：
+- 显著优于 retrieval-augmented ChatGPT（在 4 个任务上）
+- 超过 Llama2-chat 和 Alpaca（在所有任务上）
+- 在 Open-domain QA、推理和事实验证任务上全面领先
+- 长文本生成的事实准确性和引用精度显著提升
+- 推理时可通过 reflection token 概率的加权线性和进行 segment-level beam search，实现可定制化解码
+
+## CRAG — 纠正式检索增强生成
+
+CRAG（Corrective Retrieval Augmented Generation）[[raw/papers/2401.15884-Corrective-Retrieval-Augmented-Generation.html]] 是另一种改进 RAG 鲁棒性的方法：
+
+### 核心机制
+
+1. **检索评估器**：轻量级模型评估检索文档质量，返回置信度
+2. **三种触发动作**：
+   - 置信度高 → 直接使用检索结果
+   - 置信度低 → 触发大规模 web 搜索补充
+   - 中间状态 → decompose-then-recompose 过滤无关信息
+3. **信息萃取**：分解检索文档，选择性聚焦关键信息
+
+### 特点
+
+- Plug-and-play，可与各种 RAG 方法无缝结合
+- 在短文本和长文本生成任务上均有显著提升
 
 ## 相关概念
 
@@ -67,3 +86,4 @@ Input → [Retrieve?]
 - [[react-agent]] — 类似的反思循环思想
 - [[graph-rag]] — 另一种 RAG 改进方向
 - [[dense-passage-retrieval]] — Self-RAG 中使用的检索方法
+- [[colbert-retrieval]] — 可作为 Self-RAG 检索器的替代方案

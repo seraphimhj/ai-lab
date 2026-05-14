@@ -1,10 +1,10 @@
 ---
 title: 混合注意力架构
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-05-15
 type: concept
 tags: [architecture, deeplearning, optimization, inference]
-sources: [raw/articles/attention-algorithm-innovation-2025.md]
+sources: [raw/articles/attention-algorithm-innovation-2025.md, raw/papers/2403.19887-Jamba-A-Hybrid-Transformer-Mamba-Language-Model.html]
 ---
 
 # 混合注意力架构（Hybrid Attention）
@@ -32,6 +32,24 @@ Minimax M1 曾尝试 **7:1**（过于激进），M2 已回退 Full Attention。
 - Linear 层的信息压缩可能丢失关键细节
 - Full Attention 层间隔过远时会加剧此问题
 
+## Jamba — Transformer-Mamba 混合 MoE
+
+AI21 Labs 的 Jamba 是首个产品级 Attention-SSM 混合模型：[[raw/papers/2403.19887-Jamba-A-Hybrid-Transformer-Mamba-Language-Model.html]]
+
+- **架构**：交替 Transformer 层和 [[mamba]] 层，部分层加入 [[mixture-of-experts]]（16 专家 Top-2）
+- **参数**：52B 总参数，12B 激活参数
+- **上下文**：支持 256K token——公开模型中最长
+- **效率**：长上下文吞吐量是 [[mixtral]] 的 3×，可放入单张 80GB GPU（8bit 权重）
+- **表现**：基准性能匹配 Mixtral-8x7B 和 LLaMA-2 70B
+
+### Jamba 的设计启示
+
+| 设计选择 | Jamba 结论 |
+|---------|----------|
+| Transformer:Mamba 比例 | 灵活可调，取决于 memory/throughput 需求 |
+| MoE 层位置 | 每隔一层加 MoE，平衡参数量与计算量 |
+| 规模效应 | Hybrid 架构在大规模（>7B）时优势更明显 |
+
 ## 代表模型
 
 | 模型 | Linear 层类型 | Full 层类型 | 比例 |
@@ -39,6 +57,7 @@ Minimax M1 曾尝试 **7:1**（过于激进），M2 已回退 Full Attention。
 | Kimi Linear | KDA | Full Attention | 3:1 |
 | Qwen3-Next | Gated Delta Net | Full Attention | 3:1 |
 | [[mimo-v2]] | Linear | Sliding Window | 3:1 |
+| Jamba | [[mamba]] | Transformer + MoE | 灵活 |
 | Minimax M1 | Lightning Attention | Full Attention | 7:1（已弃用） |
 
 ## 未来演进

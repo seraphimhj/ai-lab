@@ -1,10 +1,10 @@
 ---
 title: 缩放定律
 created: 2026-05-10
-updated: 2026-05-14
+updated: 2026-05-15
 type: concept
 tags: [scaling, training, fundamentals]
-sources: [raw/papers/2001.08361-Scaling-Laws-Neural-Language-Models.html, raw/papers/2203.15556-Chinchilla-Training-Compute-Optimal-LLMs.html]
+sources: [raw/papers/2001.08361-Scaling-Laws-Neural-Language-Models.html, raw/papers/2203.15556-Chinchilla-Training-Compute-Optimal-LLMs.html, raw/papers/2304.01373-Pythia-A-Suite-for-Analyzing-Large-Language-Models-Across-Tr.html]
 ---
 
 # 缩放定律
@@ -57,10 +57,11 @@ DeepMind 修正了 Kaplan 的结论：
 
 后续研究发现了更复杂的关系：
 
-- **Over-training**：数据量超过 Chinchilla 最优比例，可以训练出同性能但更小的模型（LLaMA 系列策略）
-- **Emergent Abilities**：某些能力在规模超过阈值后突然出现
-- **Data Quality > Quantity**：高质量数据比纯数量更重要
+- **Over-training**：数据量超过 Chinchilla 最优比例，可以训练出同性能但更小的模型（[[llama]] 系列策略）
+- **Emergent Abilities**：某些能力在规模超过阈值后突然出现（[[palm]] 在 540B 规模首次系统观察）
+- **Data Quality > Quantity**：高质量数据比纯数量更重要（[[phi]] 系列 "Textbooks Are All You Need" 极端验证）
 - [[mixture-of-experts]]：引入新的缩放维度（专家数 vs 激活参数）
+- **Pythia**：EleutherAI 提供 70M-12B 共 16 个检查点的完整训练动态，用于研究 Scaling Laws 的微观机制（记忆/遗忘/偏差涌现）[[raw/papers/2304.01373-Pythia-A-Suite-for-Analyzing-Large-Language-Models-Across-Tr.html]]
 
 ## 实践指导
 

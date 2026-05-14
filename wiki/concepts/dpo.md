@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-10
 type: concept
 tags: [training, alignment, optimization]
-sources: [raw/papers/2305.18290-Direct-Preference-Optimization.md]
+sources: []
 ---
 
 # DPO — Direct Preference Optimization

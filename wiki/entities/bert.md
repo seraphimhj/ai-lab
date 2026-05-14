@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-10
 type: entity
 tags: [model, architecture, nlp, deeplearning]
-sources: [raw/papers/1810.04805-BERT-Pre-training-Deep-Bidirectional-Transformers.md]
+sources: [raw/papers/1810.04805-BERT-Pre-training-Deep-Bidirectional-Transformers.html]
 ---
 
 # BERT

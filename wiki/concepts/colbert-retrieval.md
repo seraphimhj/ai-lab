@@ -1,10 +1,10 @@
 ---
 title: ColBERT — Late Interaction 检索
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [retrieval, embedding, efficiency]
-sources: [raw/papers/2004.12832-ColBERT-Efficient-and-Effective-Passage-Search-via-Contextualized-Late-Interacti.md]
+sources: [raw/papers/2004.12832-ColBERT-Efficient-and-Effective-Passage-Search-via-Contextualized-Late-Interacti.html]
 ---
 
 # ColBERT — Late Interaction 检索
@@ -75,6 +75,14 @@ Doc   → BERT → [d_1, d_2, ..., d_n]   (每个 token 一个向量)
 - 引入 hard negative mining
 - 支持多语言
 - 检索延迟进一步降低
+
+## 论文实验数据
+
+在 MS MARCO（9M passages）和 TREC CAR 上的评测结果：
+- **Re-ranking 加速**：比现有 BERT-based 模型快 170×，FLOPs 减少 14,000×
+- **效果**：MRR@10 与完整 BERT 排序器竞争力相当，超过所有 non-BERT 基线（KNRM、Duet 等约 7% MRR@10 差距）
+- **索引速度**：4 GPU 服务器 约 3 小时索引 9M 段落
+- **存储**：空间占用可低至数十 GiB
 
 ## 相关概念
 

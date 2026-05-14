@@ -1,10 +1,10 @@
 ---
 title: 工具使用
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [agent, tool-use, capabilities]
-sources: [raw/papers/2302.04761-Toolformer-Language-Models-Can-Teach-Themselves-to-Use-Tools.md]
+sources: [raw/papers/2302.04761-Toolformer-Language-Models-Can-Teach-Themselves-to-Use-Tools.html, raw/papers/2303.17580-HuggingGPT-Solving-AI-Tasks-with-ChatGPT-and-its-Friends-in.html]
 ---
 
 # 工具使用
@@ -21,7 +21,9 @@ sources: [raw/papers/2302.04761-Toolformer-Language-Models-Can-Teach-Themselves-
 
 工具使用突破了这些限制。
 
-## Toolformer 的方法[[raw/papers/2302.04761-Toolformer-Language-Models-Can-Teach-Themselves-to-Tools.html]]
+## Toolformer 的方法[[raw/papers/2302.04761-Toolformer-Language-Models-Can-Teach-Themselves-to-Use-Tools.html]]
+
+Toolformer 基于 GPT-J（6.7B 参数），通过自监督方式学习工具调用，zero-shot 性能常超过更大的 GPT-3：
 
 ### 自监督学习工具调用
 
@@ -61,6 +63,17 @@ sources: [raw/papers/2302.04761-Toolformer-Language-Models-Can-Teach-Themselves-
 
 在 ReAct 框架中，工具使用是 Action 的一种：
 - Thought → Action (tool call) → Observation → ...
+
+## HuggingGPT — LLM 作为工具调度控制器
+
+HuggingGPT[[raw/papers/2303.17580-HuggingGPT-Solving-AI-Tasks-with-ChatGPT-and-its-Friends-in.html]] 将工具使用推向"多模态多模型编排"：
+
+1. **Task Planning**：LLM（ChatGPT）解析用户请求，分解为子任务
+2. **Model Selection**：根据 Hugging Face 上模型描述选择专家模型
+3. **Task Execution**：执行选定模型并获取结果
+4. **Response Generation**：整合所有模型预测生成最终回复
+
+核心理念："语言作为通用接口"——通过自然语言描述连接 LLM 与各种 AI 模型，覆盖语言、视觉、语音等多模态任务。
 
 ## 挑战
 

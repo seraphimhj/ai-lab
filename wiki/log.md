@@ -109,3 +109,38 @@
   - 充实已有实体页：~15 篇（GPT-3/LLaMA 1-3/DeepSeek LLM/V2/V3/R1 等）
   - 充实已有概念页：~30 篇（FlashAttention 1-3, GPTQ/AWQ/SparseGPT, LoRA, RAG/REALM/RETRO, Scaling Laws/Chinchilla, RLHF 系列, Embedding 系列, SPLADE, YaRN/LongLoRA/Ring Attention, StarCoder 等）
   - 已通过已有页面覆盖（无需新页面）：~25 篇（Attention Is All You Need→transformer-architecture, BERT→bert, ReAct→react-agent, CoT→chain-of-thought, ToT→tree-of-thoughts, Toolformer→tool-use, Self-Instruct→instruction-tuning, DPO→dpo, Mixtral→mixtral, Mistral→mistral-7b, PaLM→palm, GLM→glm, Gemma→gemma, Yi→yi-model, Phi→phi, CLIP→clip, Mamba→mamba, GraphRAG→graph-rag, Self-RAG→self-rag, DPR→dense-passage-retrieval, ColBERT→colbert-retrieval, MoE→mixture-of-experts 等）
+
+## [2026-05-15] ingest | raw/papers/ 全量论文入库 — 补全轮
+- 新建概念页 (1):
+  - swe-agent: 软件工程 Agent + ACI 界面设计（2405.15793）
+- 充实实体页 (11):
+  - gpt-4: 补充 RLHF/MMLU/Scaling Law 数据
+  - mistral-7b: 完整架构参数表、SWA/GQA 细节
+  - mixtral: 架构参数、47B/13B 参数说明、DPO 对齐
+  - palm: 6T token/780B/6144 TPU v4、不连续涌现/CoT 发现
+  - phi: phi-1.5 训练参数、数据策略细节
+  - glm: INT4 量化/4×RTX3090 推理、超越 GPT-3 175B
+  - clip: 400M WIT 数据集、对比学习效率 4x、ImageNet 76.2%
+  - mamba: sources 格式修正 + 交叉链接
+  - gemma: 完整架构参数（2B/7B）、6T token
+  - yi-model: 3.1T token、<10K 微调指令、34B RTX4090 部署
+  - qwen: sources 格式修正 + 交叉链接
+- 充实概念页 (13):
+  - dense-passage-retrieval: DPR Top-5 65.2% vs BM25 42.9%
+  - colbert-retrieval: 170× speedup、14000× fewer FLOPs
+  - chain-of-thought: PaLM 540B GSM8K 57% vs standard 18%、涌现 ~100B+
+  - tree-of-thoughts: 双过程理论设计哲学
+  - instruction-tuning: Flan-PaLM +9.4%、MMLU 75.2%
+  - react-agent: ALFWorld +34%、WebShop +10%
+  - tool-use: Toolformer 6.7B 超 GPT-3 + 新增 HuggingGPT 四阶段框架
+  - self-rag: Self-RAG 7B/13B 超 ChatGPT + 新增 CRAG 纠正式 RAG
+  - graph-rag: 百万 token 级数据集、map-reduce 模式
+  - in-context-learning: GPT-3 175B 参数背景
+  - mixture-of-experts: Mixtral 47B/13B、超 GPT-3.5/LLaMA-70B
+  - linear-attention: 新增 Griffin 门控线性循环 + 局部注意力
+  - hybrid-attention: 新增 Jamba Transformer-Mamba MoE 混合（52B/12B active, 256K ctx）
+- 补充更新:
+  - scaling-laws: 新增 Pythia 训练动态分析套件
+  - rag-approaches: sources 格式修正 .md → .html
+- Updated index.md: +1 concept（swe-agent）, page count 73→74
+- 论文覆盖统计：raw/papers/ 全部 70+ 篇论文均已映射到 wiki 页面

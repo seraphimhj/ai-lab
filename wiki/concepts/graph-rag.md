@@ -1,10 +1,10 @@
 ---
 title: GraphRAG — 基于知识图谱的检索增强生成
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [retrieval, generation, knowledge-graph]
-sources: [raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Query-Focused-Summarization.md]
+sources: [raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Query-Focused-Summarization.html]
 ---
 
 # GraphRAG — 基于知识图谱的检索增强生成
@@ -53,6 +53,14 @@ sources: [raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Que
 | 构建成本 | 低 | 高（需 LLM 抽取） |
 | 可维护性 | 简单 | 复杂（图更新） |
 
+## 论文关键数据
+
+Microsoft Research (Edge et al., 2024) 在百万 token 规模数据集上的实验：
+- 针对全局 sensemaking 问题，GraphRAG 在 **comprehensiveness**（全面性）和 **diversity**（多样性）上大幅超越朴素 RAG 基线
+- 两阶段索引：先从源文档中用 LLM 提取实体知识图谱，再对紧密相关实体群组预生成社区摘要
+- 查询时：每个社区摘要生成部分回答，然后汇总为最终回答（map-reduce 模式）
+- 开源 Python 实现：https://aka.ms/graphrag
+
 ## 适用场景
 
 - 大规模文档集合的全局理解
@@ -73,3 +81,4 @@ sources: [raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Que
 - [[self-rag]] — 另一种 RAG 改进方向（反思机制）
 - [[dense-passage-retrieval]] — GraphRAG 可以结合 DPR 进行混合检索
 - [[text-embedding]] — 文本向量化的基础技术
+- [[colbert-retrieval]] — 细粒度检索可作为局部搜索的补充

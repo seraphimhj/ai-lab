@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-14
 type: concept
 tags: [reasoning, prompting, inference]
-sources: [raw/papers/2201.11903-Chain-of-Thought-Prompting-Elicits-Reasoning-in-Large-Langua.md, raw/articles/llm-agent-core-principles-2026.md]
+sources: [raw/papers/2201.11903-Chain-of-Thought-Prompting-Elicits-Reasoning-in-Large-Langua.html, raw/articles/llm-agent-core-principles-2026.html]
 ---
 
 # Chain-of-Thought — 思维链提示
@@ -63,6 +63,20 @@ A: Let's think step by step.
 - 强度调高 → 多花时间推演（类似深度推理模式）
 - 强度调低 → 直接给答案省 token（类似快速对话模式）
 - 好处：一套代码覆盖所有场景，复杂度大幅降低
+
+## 论文关键数据
+
+Wei et al. (2022) 在三个大模型（LaMDA 137B、PaLM 540B、GPT-3 175B）上测试：
+- **GSM8K 数学题**：PaLM 540B + 8 个 CoT exemplars 达到 57% 准确率，超过 fine-tuned GPT-3 with verifier（55%）和 standard prompting（18%）
+- **涌现效应**：CoT 仅在足够大的模型中有效（~100B+ 参数），小模型几乎无增益
+- 覆盖算术、常识和符号推理三大类任务
+
+## 论文关键数据
+
+Wei et al. (2022) 在三个大模型（LaMDA 137B、PaLM 540B、GPT-3 175B）上测试：
+- **GSM8K 数学题**：PaLM 540B + 8 个 CoT exemplars 达到 57% 准确率，超过 fine-tuned GPT-3 with verifier（55%）和 standard prompting（18%）
+- **涌现效应**：CoT 仅在足够大的模型中有效（~100B+ 参数），小模型几乎无增益
+- 覆盖算术、常识和符号推理三大类任务
 
 ## 局限性
 

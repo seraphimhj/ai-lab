@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-14
 type: concept
 tags: [agent, reasoning, tool-use]
-sources: [raw/papers/2210.03629-ReAct-Synergizing-Reasoning-and-Acting-in-Language-Models.md, raw/articles/llm-agent-core-principles-2026.md]
+sources: [raw/papers/2210.03629-ReAct-Synergizing-Reasoning-and-Acting-in-Language-Models.html, raw/articles/llm-agent-core-principles-2026.html]
 ---
 
 # ReAct — 推理与行动结合
@@ -73,6 +73,26 @@ while 任务未完成:
 - LLM 是大脑，工具是手脚，循环是驱动力
 - 循环副作用：上下文不断增长 → 上下文窗口大小至关重要
 - Agent 工程的核心是上下文工程：如何高效组织和填充上下文窗口
+
+## 论文实验数据
+
+Yao et al. (2022) 在四个基准上评测 ReAct：
+- **HotpotQA**：ReAct + CoT 组合方法超越纯 CoT，解决了幻觉和错误传播问题
+- **Fever 事实验证**：ReAct 通过 Wikipedia API 交互生成可解释的推理轨迹
+- **ALFWorld**：1-2 shot ReAct 比 imitation/RL 方法（训练 10³–10⁵ 样本）高 34% 绝对成功率
+- **WebShop**：ReAct 比 RL 方法高 10% 绝对成功率
+
+关键发现：推理和行动的组合相比单独使用（纯 Reasoning 或纯 Acting）带来系统性优势。
+
+## 论文实验数据
+
+Yao et al. (2022) 在四个基准上评测 ReAct：
+- **HotpotQA**：ReAct + CoT 组合方法超越纯 CoT，解决了幻觉和错误传播问题
+- **Fever 事实验证**：ReAct 通过 Wikipedia API 交互生成可解释的推理轨迹
+- **ALFWorld**：1-2 shot ReAct 比 imitation/RL 方法（训练 10³–10⁵ 样本）高 34% 绝对成功率
+- **WebShop**：ReAct 比 RL 方法高 10% 绝对成功率
+
+关键发现：推理和行动的组合相比单独使用（纯 Reasoning 或纯 Acting）带来系统性优势。
 
 ## 局限性
 

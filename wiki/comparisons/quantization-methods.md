@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-10
 type: comparison
 tags: [comparison, quantization, compression, deployment, inference]
-sources: [raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Generative-Pre-Trained-Transformers.md, raw/papers/2301.00774-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression-and-Acceleration.md, raw/papers/2306.00978-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression.md]
+sources: [raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Generative-Pre.html, raw/papers/2301.00774-SparseGPT-Massive-Language-Models-Can-Be-Accurately-Pruned-i.html, raw/papers/2306.00978-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression.html]
 ---
 
 # 量化方法对比
@@ -34,7 +34,7 @@ sources: [raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Gen
 
 ### GPTQ
 
-基于近似二阶信息（Hessian 矩阵逆的近似），逐层优化量化误差。[[raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Generative-Pre-Trained-Transformers.html]]
+基于近似二阶信息（Hessian 矩阵逆的近似），逐层优化量化误差。[[raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Generative-Pre.html]]
 
 - 量化时需要 GPU，速度较慢（几分钟到几十分钟）
 - INT4 量化下精度损失极小
@@ -42,7 +42,7 @@ sources: [raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Gen
 
 ### AWQ (Activation-aware Weight Quantization)
 
-观察到一个关键发现：仅 1% 的显著权重通道（salient channels）对模型输出影响巨大。AWQ 保护这些通道不被过度量化。[[raw/papers/2301.00774-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression-and-Acceleration.html]]
+观察到一个关键发现：仅 1% 的显著权重通道（salient channels）对模型输出影响巨大。AWQ 保护这些通道不被过度量化。[[raw/papers/2306.00978-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression.html]]
 
 - 量化速度比 GPTQ 快
 - 同等精度下 AWQ 通常优于 GPTQ
@@ -50,7 +50,7 @@ sources: [raw/papers/2210.17323-GPTQ-Accurate-Post-Training-Quantization-for-Gen
 
 ### SparseGPT
 
-将权重分为重要权重和可剪枝权重，先做结构化稀疏剪枝再量化。[[raw/papers/2306.00978-AWQ-Activation-aware-Weight-Quantization-for-LLM-Compression.html]]
+将权重分为重要权重和可剪枝权重，先做结构化稀疏剪枝再量化。[[raw/papers/2301.00774-SparseGPT-Massive-Language-Models-Can-Be-Accurately-Pruned-i.html]]
 
 - 同时实现稀疏化和量化
 - 理论精度损失最小
@@ -87,8 +87,8 @@ llama.cpp 项目的量化格式，支持多种量化策略（Q4_K_M, Q5_K_S, Q8_
 
 ## 相关链接
 
-- [[gptq]] — GPTQ 详解
-- [[awq]] — AWQ 详解
-- [[gguf]] — GGUF 格式与 llama.cpp
-- [[llm-inference-optimization]] — 推理优化总览
-- [[kv-cache]] — KV Cache 量化
+- [[model-quantization]] — GPTQ 详解
+- [[model-quantization]] — AWQ 详解
+- [[model-quantization]] — GGUF 格式与 llama.cpp
+- [[model-quantization]] — 推理优化总览
+- [[flash-attention]] — KV Cache 量化

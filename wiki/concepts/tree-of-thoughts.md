@@ -1,10 +1,10 @@
 ---
 title: Tree of Thoughts — 树状思维
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [reasoning, prompting, inference]
-sources: [raw/papers/2305.10601-Tree-of-Thoughts-Deliberate-Problem-Solving-with-Large-Langu.md]
+sources: [raw/papers/2305.10601-Tree-of-Thoughts-Deliberate-Problem-Solving-with-Large-Langu.html]
 ---
 
 # Tree of Thoughts — 树状思维
@@ -44,6 +44,14 @@ sources: [raw/papers/2305.10601-Tree-of-Thoughts-Deliberate-Problem-Solving-with
 | BFS | 广度优先，评估每层所有节点 | 每层步骤少 |
 | DFS | 深度优先，回溯错误路径 | 解空间深 |
 | Beam Search | 保留 top-b 个候选 | 平衡宽度和深度 |
+
+## 设计哲学
+
+ToT 的设计灵感来自认知科学的"双过程理论"：
+- **System 1**：快速、自动——对应 LLM 的标准自回归生成
+- **System 2**：缓慢、深思——对应 ToT 的搜索与评估
+
+以及 Newell & Simon (1950s) 将问题求解视为"组合问题空间中的搜索"。ToT 用 LLM 本身作为启发式评估函数（而非程序化或学习到的启发式），是前所未有的做法。
 
 ## 实际效果
 

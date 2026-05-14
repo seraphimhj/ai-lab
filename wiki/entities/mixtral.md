@@ -1,10 +1,10 @@
 ---
 title: Mixtral MoE
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: entity
 tags: [model, open-source, llm, architecture]
-sources: [raw/papers/2401.04088-Mixtral-of-Experts.md]
+sources: [raw/papers/2401.04088-Mixtral-of-Experts.html]
 ---
 
 # Mixtral MoE
@@ -23,12 +23,25 @@ Mixtral 的核心创新在于将 Transformer 的 FFN 层替换为 8 个专家 FF
 
 ## 模型规格
 
-- **总参数**：46.7B
-- **激活参数**：12.9B（每 Token）
+| 参数 | 值 |
+|------|-----|
+| dim | 4096 |
+| n_layers | 32 |
+| head_dim | 128 |
+| hidden_dim | 14336 |
+| n_heads | 32 |
+| n_kv_heads | 8 |
+| context_len | 32768 |
+| vocab_size | 32000 |
+| num_experts | 8 |
+| top_k_experts | 2 |
+
+- **总参数**：46.7B（论文原文：each token has access to 47B parameters）
+- **激活参数**：12.9B（论文原文：only uses 13B active parameters during inference）
 - **专家数量**：8 个
 - **Top-K 路由**：2
 - **上下文窗口**：32K
-- **架构特性**：继承 [[mistral-7b]] 的 SWA 和 GQA
+- **架构特性**：继承 [[mistral-7b]] 的 GQA
 
 ## 性能表现
 
@@ -41,8 +54,8 @@ Mixtral 8x7B 在多项基准上接近或超越 GPT-3.5 和 LLaMA 2 70B：
 
 ## 版本变体
 
-- **Mixtral 8x7B Base**：基础预训练模型
-- **Mixtral 8x7B Instruct**：SFT 对齐的指令模型
+- **Mixtral 8x7B Base**：基础预训练模型（Apache 2.0 许可）
+- **Mixtral 8x7B Instruct**：SFT + DPO（Direct Preference Optimization）对齐的指令模型，超越 GPT-3.5 Turbo、Claude-2.1、Gemini Pro 和 LLaMA 2 70B Chat
 - **Mixtral 8x22B**：更大规模版本，性能接近 GPT-4
 
 ## 技术对比
@@ -51,4 +64,4 @@ Mixtral 8x7B 在多项基准上接近或超越 GPT-3.5 和 LLaMA 2 70B：
 
 ## 影响
 
-Mixtral 的成功证明了 MoE 架构在大语言模型中的实用性，推动了 MoE 从学术研究走向工程实践。其开源策略也加速了 MoE 在开源社区的普及。
+Mixtral 的成功证明了 MoE 架构在大语言模型中的实用性，推动了 MoE 从学术研究走向工程实践。其开源策略也加速了 MoE 在开源社区的普及。基于 [[transformer-architecture]] 的 sparse MoE 设计启发了 [[deepseek]] 等团队的后续工作。

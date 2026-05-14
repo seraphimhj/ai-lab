@@ -1,10 +1,10 @@
 ---
 title: 线性注意力机制
 created: 2026-05-05
-updated: 2026-05-05
+updated: 2026-05-15
 type: concept
 tags: [architecture, deeplearning, optimization, inference]
-sources: [raw/articles/attention-algorithm-innovation-2025.md]
+sources: [raw/articles/attention-algorithm-innovation-2025.md, raw/papers/2402.19427-Griffin-Mixing-Gated-Linear-Recurrences-with-Local-Attention.html]
 ---
 
 # 线性注意力机制（Linear Attention）
@@ -53,6 +53,16 @@ Q × K → L×L 矩阵 → Softmax → ×V
 3. **输入相关 Decay (Gated LA)** → 门控决定遗忘，更灵活
 4. **有减法 (Delta Net)** → 不仅能"减弱"，还能"删除"旧信息
 5. **细粒度 Decay (KDA)** → 每个维度独立衰减率，精确控制
+
+## Griffin — 门控线性循环 + 局部注意力
+
+Google DeepMind 的 Griffin 模型验证了混合门控线性循环与局部注意力的有效性：[[raw/papers/2402.19427-Griffin-Mixing-Gated-Linear-Recurrences-with-Local-Attention.html]]
+
+- **架构**：交替使用 Gated Linear Recurrence 层和 Local Attention 层
+- **规模**：实验覆盖 100M → 14B 参数
+- **结果**：在训练效率上匹配 Transformer，长序列推理效率显著优于 Transformer
+- **关键发现**：Recurrence + Local Attention 的混合方案在 language modeling 上不输纯 Transformer，且外推到更长序列时性能更稳定
+- 印证了 [[hybrid-attention]] 3:1 比例的可行性
 
 ## 工业应用
 

@@ -1,10 +1,10 @@
 ---
 title: In-Context Learning — 上下文学习
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: concept
 tags: [reasoning, prompting, inference]
-sources: [raw/papers/2005.14165-Language-Models-are-Few-Shot-Learners.md]
+sources: [raw/papers/2005.14165-Language-Models-are-Few-Shot-Learners.html]
 ---
 
 # In-Context Learning — 上下文学习
@@ -13,12 +13,12 @@ sources: [raw/papers/2005.14165-Language-Models-are-Few-Shot-Learners.md]
 
 ## GPT-3 的发现
 
-GPT-3 首次系统性地展示了大模型的 in-context learning 能力[[raw/papers/2005.14165-Language-Models-are-Few-Shot-Learners.html]]：
+GPT-3（175B 参数，Brown et al., 2020）首次系统性地展示了大模型的 in-context learning 能力[[raw/papers/2005.14165-Language-Models-are-Few-Shot-Learners.html]]：
 - **Zero-shot**：只给任务描述，不给示例
 - **One-shot**：给一个示例
 - **Few-shot**：给多个示例
 
-模型规模越大，ICL 能力越强——这是一种涌现能力。
+模型规模越大，ICL 能力越强——这是一种涌现能力。GPT-3 使用 dual-encoder 架构，在多种 NLP 任务上验证了无需微调即可通过提示达到有竞争力的性能。
 
 ## 形式分类
 
@@ -57,3 +57,7 @@ ICL 的机制仍在研究中，主流假说包括：
 - [[chain-of-thought]] — ICL 中最成功的推理增强方法
 - [[instruction-tuning]] — 将 ICL 能力固化到模型参数中
 - [[scaling-laws]] — ICL 能力随模型规模增长的规律
+- [[dense-passage-retrieval]] — ICL 的 few-shot 范式启发了检索增强方法
+- [[react-agent]] — 在 ICL 框架下通过 few-shot 实现工具使用
+- [[dense-passage-retrieval]] — ICL 的 few-shot 范式启发了检索增强方法
+- [[react-agent]] — 在 ICL 框架下通过 few-shot 实现工具使用

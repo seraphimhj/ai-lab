@@ -4,12 +4,12 @@ created: 2026-05-10
 updated: 2026-05-10
 type: comparison
 tags: [comparison, alignment, rlhf, dpo, training, safety]
-sources: [raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-feedback.md, raw/papers/2305.18290-Direct-Preference-Optimization-Your-Language-Model-is-Secretly-a-Reward-Model.md, raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement-Learning-from-Human-Feedback.md]
+sources: [raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-f.html, raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement.html]
 ---
 
 # RLHF vs DPO 对齐方法对比
 
-将预训练 LLM 对齐人类偏好（helpful, harmless, honest）的两种主流方法。[[raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-feedback.html]]
+将预训练 LLM 对齐人类偏好（helpful, harmless, honest）的两种主流方法。[[raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-f.html]]
 
 ## 流程对比
 
@@ -31,7 +31,7 @@ sources: [raw/papers/2203.02155-Training-language-models-to-follow-instructions-
                    人类排序数据 (无需 RM)
 ```
 
-两阶段流程：SFT → DPO，隐式消除 Reward Model。[[raw/papers/2305.18290-Direct-Preference-Optimization-Your-Language-Model-is-Secretly-a-Reward-Model.html]]
+两阶段流程：SFT → DPO，隐式消除 Reward Model。
 
 ## 核心维度对比
 
@@ -94,5 +94,5 @@ $$\mathcal{L}_{\text{DPO}} = -\mathbb{E}\left[\log \sigma\left(\beta \log \frac{
 - [[rlhf]] — RLHF 详解
 - [[dpo]] — DPO 详解
 - [[constitutional-ai]] — Anthropic 的对齐方法
-- [[deepseek-r1]] — GRPO 应用的代表模型
-- [[instructgpt]] — RLHF 首个大规模应用
+- [[deepseek]] — GRPO 应用的代表模型
+- [[gpt-3]] — RLHF 首个大规模应用
