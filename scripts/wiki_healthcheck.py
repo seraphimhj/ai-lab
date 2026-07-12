@@ -7,7 +7,7 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "wiki"
-CONTENT_DIRS = ("entities", "concepts", "comparisons", "queries")
+CONTENT_DIRS = ("entities", "concepts", "comparisons")
 REQUIRED_FRONTMATTER = ("title:", "created:", "updated:", "type:", "tags:", "sources:")
 STALE_AFTER_DAYS = 45
 
@@ -50,6 +50,17 @@ def main() -> int:
                     warnings.append(f"stale {age}d: {page.relative_to(ROOT)}")
             except ValueError:
                 errors.append(f"invalid updated date: {page.relative_to(ROOT)}")
+
+    # 伴读推送停摆检测：companion-log 最新条目距今 >2 天即报错
+    log_file = ROOT / "queries" / "companion-log.md"
+    if log_file.exists():
+        dates = re.findall(r"^## (\d{4}-\d{2}-\d{2})", log_file.read_text(encoding="utf-8"), re.M)
+        if dates:
+            silent = (today - date.fromisoformat(max(dates))).days
+            if silent > 2:
+                errors.append(f"companion-log silent for {silent}d — run `hermes cron status`")
+        else:
+            warnings.append("companion-log has no entries yet")
 
     raw_files = [p for kind in ("articles", "papers", "transcripts") for p in markdown_files(ROOT / "raw" / kind)]
     print(f"Wiki root: {ROOT}")

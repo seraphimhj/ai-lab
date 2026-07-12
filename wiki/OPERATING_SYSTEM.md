@@ -21,7 +21,8 @@
 
 ## 2. 入口：先判定，再入库
 
-任何链接、论文、视频或想法先进入 `inbox/`，一条记录只花 2 分钟填写：
+任何链接、论文、视频或想法先进入 `inbox/`。移动/碎片场景不必开电脑：
+把链接直接发给 hermes（飞书/微信），它会代写 inbox 条目。一条记录只花 2 分钟填写：
 
 - 来源和 URL
 - 为什么值得看（对应哪个当前问题）
@@ -93,9 +94,16 @@
   伴读全文存 `notes/`、companion-log 记一行索引 → git push。
   不去重：薄弱点还在就换角度继续推。
 - **Claude 挖掘（周任务，任一机器人工发起）**：读 companion-log + 近期 wiki 活动 →
-  更新 current-focus 薄弱点 → 往 picks 补 3-5 条选片。
+  更新 current-focus 薄弱点 → 往 picks 补 3-5 条选片 →
+  把上周反馈积极（"已懂"/有追问深挖）的伴读笔记提炼进 `concepts/`，
+  其余留在 notes/ 沉底——伴读层的出口是知识层，不是无限堆积。
 - **周一提醒**：附带 inbox 待分诊数与 picks 队列余量，余量 ≤2 就该跑挖掘。
-- 运行依赖：本机 hermes 在线。`papers-recommended.log` 已退役为历史存档。
+- **反馈习惯（闭环命脉）**：读完伴读哪怕只回 hermes 一句话
+  （"懂了"/"哪步没跟上"）——反馈只从 hermes 会话回收，
+  留在脑子里或说给别人的都不算。
+- **停摆检测**：连续 2 天没收到 9 点推送就跑 `hermes cron status`；
+  `wiki_healthcheck.py` 会在 companion-log 静默 >2 天时报错。
+- 运行依赖：本机 hermes 在线。`papers-recommended.log` 已退役进 `_archive/`。
 
 ## 7. 成功指标
 
