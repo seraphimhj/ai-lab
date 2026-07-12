@@ -11,10 +11,14 @@
             "id": "f2869a8778ee9d85",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "SCHEMA.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "SCHEMA"
             }
           }
         ]
@@ -74,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 484.5
+    "width": 254.5
   },
   "right": {
     "id": "550122011e5d0f03",
@@ -180,8 +184,15 @@
       "obsidian-importer:Open Importer": false
     }
   },
-  "active": "f2869a8778ee9d85",
+  "active": "e0b5bd2c2e44e09c",
   "lastOpenFiles": [
+    "papers-reading-list.md",
+    "log.md",
+    "index.md",
+    "未命名.md",
+    "concepts/colbert-retrieval.md",
+    "concepts/claude-code-memory-system.md",
+    "concepts/agent-skills.md",
     "raw/transcripts/luo-fuli-interview-zhangxiaojun-2026.md",
     "raw/transcripts",
     "raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.pdf",
@@ -195,9 +206,6 @@
     "raw/papers/2408.03314-Scaling-LLM-Test-Time-Compute-Optimally-can-be-More-Effectiv.pdf",
     "entities/clip.md",
     "SCHEMA.md",
-    "log.md",
-    "index.md",
-    "papers-reading-list.md",
     "raw/papers/2407.21783-Llama-3-Herd-of-Models.md",
     "raw/articles/llm-agent-core-principles-2026.md",
     "raw/articles/designing-for-agents-2025.md",
@@ -211,11 +219,8 @@
     "raw/papers/1810.04805-BERT-Pre-training-Deep-Bidirectional-Transformers.md",
     "raw/papers/1706.03762-Attention Is All You Need.md",
     "concepts/context-engineering.md",
-    "concepts/agent-skills.md",
     "concepts/mcp-model-context-protocol.md",
     "raw/papers/1909.08593-Fine-Tuning-Language-Models-from-Human-Preferences.md",
-    "raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.md",
-    "raw/papers/2309.16609-Qwen-Technical-Report.md",
-    "raw/papers/2309.12307-LongLoRA-Efficient-Fine-tuning-of-Long-Context-Large-Languag.md"
+    "raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.md"
   ]
 }

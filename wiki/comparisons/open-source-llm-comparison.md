@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-10
 type: comparison
 tags: [comparison, llm, open-source, llama, qwen, deepseek, mistral]
-sources: [raw/papers/2412.19437-DeepSeek-V3-Technical-Report.html, raw/papers/2501.12948-DeepSeek-R1-Incentivizing-Reasoning-Capability-in-LLMs-via-R.html, raw/papers/2405.04434-DeepSeek-V2-A-Strong-Economical-and-Efficient-Mixture-of-Exp.html, raw/papers/2309.16609-Qwen-Technical-Report.pdf, raw/papers/2401.04088-Mixtral-of-Experts.html, raw/papers/2310.06825-Mistral-7B.html, raw/papers/2403.08295-Gemma-Open-Models-Based-on-Gemini-Research-and-Technology.html, raw/papers/2403.04652-Yi-Open-Foundation-Models-by-01AI.html, raw/papers/2309.05463-Textbooks-Are-All-You-Need-II-phi-15-technical-report.html, raw/papers/2406.12793-ChatGLM-A-Family-of-Large-Language-Models-from-GLM-130B-to-G.html]
+sources: [raw/papers/2412.19437-DeepSeek-V3-Technical-Report.md, raw/papers/2501.12948-DeepSeek-R1-Incentivizing-Reasoning-Capability-in-LLMs-via-R.md, raw/papers/2405.04434-DeepSeek-V2-A-Strong-Economical-and-Efficient-Mixture-of-Exp.md, raw/papers/2309.16609-Qwen-Technical-Report.md, raw/papers/2401.04088-Mixtral-of-Experts.md, raw/papers/2310.06825-Mistral-7B.md, raw/papers/2403.08295-Gemma-Open-Models-Based-on-Gemini-Research-and-Technology.md, raw/papers/2403.04652-Yi-Open-Foundation-Models-by-01AI.md, raw/papers/2309.05463-Textbooks-Are-All-You-Need-II-phi-15-technical-report.md, raw/papers/2406.12793-ChatGLM-A-Family-of-Large-Language-Models-from-GLM-130B-to-G.md]
 ---
 
 # 2024-2025 开源 LLM 对比
@@ -74,8 +74,8 @@ Qwen 系列在中文和跨语言任务上领先，LLaMA 英文最强，Mistral �
 
 ## 相关链接
 
-- [[deepseek]] — DeepSeek V3 技术详解
-- [[deepseek]] — DeepSeek R1 推理模型
+- [[deepseek-v3]] — DeepSeek V3 技术详解
+- [[deepseek-r1]] — DeepSeek R1 推理模型
 - [[llama]] — LLaMA 系列演进
 - [[qwen]] — Qwen 系列详解
 - [[mixture-of-experts]] — MoE 架构原理

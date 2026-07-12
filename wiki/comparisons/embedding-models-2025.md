@@ -4,7 +4,7 @@ created: 2026-05-10
 updated: 2026-05-10
 type: comparison
 tags: [comparison, embedding, mteb, retrieval, open-source, commercial-api]
-sources: [raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.html, raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.html, raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.html, raw/papers/2308.03281-Towards-General-Text-Embeddings-with-Multi-stage-Contrastive-Learning.pdf, raw/papers/2402.03216-M3-Embedding-Multi-Linguality-Multi-Functionality-Multi-Granularity-Text-Embeddi.html, raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.html]
+sources: [raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.md, raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.md, raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.md, raw/papers/2308.03281-Towards-General-Text-Embeddings-with-Multi-stage-Contrastive-Learning.md, raw/papers/2402.03216-M3-Embedding-Multi-Linguality-Multi-Functionality-Multi-Granularity-Text-Embeddi.md, raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.md]
 ---
 
 # 2025-2026 Embedding 大模型全面对比
@@ -78,8 +78,8 @@ jina-embeddings-v5-text-small 以仅 677M 参数达到 71.7 MTEB 分数，通过
 
 ## 相关链接
 
-- [[text-embedding]] — MTEB 基准详解
-- [[text-embedding]] — BGE 系列模型
-- [[text-embedding]] — Embedding 模型鼻祖
+- [[mteb]] — MTEB 基准详解
+- [[bge]] — BGE 系列模型
+- [[sentence-bert]] — Embedding 模型鼻祖
 - [[rag-approaches]] — Embedding 在 RAG 中的应用
 - [[dense-passage-retrieval]] — 密集检索基础
