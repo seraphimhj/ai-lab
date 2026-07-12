@@ -11,6 +11,11 @@
   - 建议去向：drop / read / ingest / experiment
 -->
 
+- [ ] 2026-07-12 | 微信文章 | https://mp.weixin.qq.com/s/TaTcRFTt6N5yxkDaeMlTvQ
+  - 当前问题：
+  - 为什么现在值得投入：用户主动收藏，可能包含值得后续阅读或纳入知识库的信息。
+  - 建议去向：
+
 ## 已分诊
 
 <!-- 每周移动一次，并保留去向，避免重复收集。 -->
