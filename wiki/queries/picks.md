@@ -1,0 +1,19 @@
+# 选片队列（Picks）
+
+> Claude（本地/工作机）基于 companion-log 和 current-focus 挖掘后写入。
+> hermes 每日取第一条 pending 伴读推送，推送后把状态改为 pushed。
+
+<!-- 每条格式：
+- [ ] 材料/主题 | 命中薄弱点：xxx | 切入角度：一句话
+  推送后改为：
+- [x] 材料/主题 | 命中薄弱点：xxx | 切入角度：一句话 | pushed YYYY-MM-DD
+-->
+
+## 队列
+
+- [ ] 为什么生成比训练慢：KV cache 的内存账 + PagedAttention（vLLM, arXiv 2309.06180） | 命中薄弱点：retrieval 以外·推理系统 | 切入角度：先算一笔 70B 模型单条请求的显存账，再看 vLLM 把浪费的 60-80% 显存怎么拿回来
+- [ ] InfoNCE 也是交叉熵：对比学习与检索 embedding 的目标函数同源（SimCLR / Sentence-BERT / E5） | 命中薄弱点：统一数学框架（递进 07-12 的 MLE→DPO） | 切入角度：把 InfoNCE 写成 softmax 分类的交叉熵、负样本即类别，接上 RAG/Embedding 主线
+- [ ] 数据和参数怎么分钱：Chinchilla 与 scaling laws（arXiv 2203.15556） | 命中薄弱点：retrieval 以外·预训练 + 端到端闭环·数据环节 | 切入角度：整篇论文就是一个约束优化问题——给定算力预算，损失对 N 和 D 的分配怎么解
+- [ ] 你的评测集是从哪个分布采的：benchmark 失效的三种方式（contamination / Goodhart / 分布漂移） | 命中薄弱点：端到端闭环·评测环节 + 主线·模型评估（递进 07-12 的偏差传导） | 切入角度：评测这一环怎么骗人，以及为什么线上指标和离线指标会打架
+- [ ] RLHF 之后：DPO / KTO / GRPO 一张家谱 | 命中薄弱点：retrieval 以外·后训练（递进 MLE→DPO） | 切入角度：每个方法都是在「reward 从哪来」「KL 锚在哪」两个轴上挪位置，一张图讲完演化逻辑
+- [ ] 【交叉·AlexNet × Attention】两次架构革命都守着同一条边界：让出「路径」、钉死「指南针」 | 命中薄弱点：端到端闭环·评测环节 + 主线·模型评估（递进 07-12 的偏差传导） | 切入角度：AlexNet 把「特征该长什么样」、Transformer 把「序列结构先验」都交给数据自己长，但两者都没敢让出损失/评价标准这根锚——而今天 LLM-as-judge / RLAIF 正在史上第一次尝试让权「指南针」本身，所以当下的评测危机无先例可抄
