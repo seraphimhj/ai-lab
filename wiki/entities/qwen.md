@@ -1,10 +1,10 @@
 ---
 title: Qwen 系列
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: entity
 tags: [model, open-source, llm, multimodal]
-sources: [raw/papers/2309.16609-Qwen-Technical-Report.md]
+sources: [raw/papers/2309.16609-Qwen-Technical-Report.pdf]
 ---
 
 # Qwen 系列
@@ -13,7 +13,7 @@ Qwen（通义千问）是 [[alibaba-qwen]] 发布的开源大语言模型系列�
 
 ## Qwen 1.0（2023 年 8 月）
 
-Qwen 的首个版本即展现了出色的综合能力。[[raw/papers/2309.16609-Qwen-Technical-Report.html]]
+Qwen 的首个版本即展现了出色的综合能力。[[raw/papers/2309.16609-Qwen-Technical-Report.pdf]]
 
 - 参数规模：1.8B / 7B / 14B / 72B
 - 训练数据：3T+ Token 多语言语料
@@ -49,10 +49,11 @@ Qwen 系列在多语言基准上表现优异，尤其在中文任务上具有明
 - 在中文理解和生成任务上达到同规模最佳
 - 代码能力突出，在 HumanEval 等基准上表现优异
 - 工具调用能力强大，支持 Function Calling
-- 长上下文理解能力通过 [[2309.00071-YaRN-Efficient-Context-Window-Extension-of-Large-Language-Mo|YaRN]] 等技术扩展
+- 长上下文理解能力通过 YaRN 等技术扩展
 
 ## 与其他模型对比
 
 - 相比 [[llama]] 系列，Qwen 在中文能力上更具优势
 - 相比 [[deepseek]] 系列，Qwen 的模型生态更加完整
 - 相比 [[yi-model]]，Qwen 的社区活跃度和工具链更成熟
+- 相比 [[glm]] 系列，Qwen 的国际化和多模态布局更广泛

@@ -1,10 +1,10 @@
 ---
 title: RAG 方法对比
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-15
 type: comparison
 tags: [comparison, rag, retrieval, agent, knowledge]
-sources: [raw/papers/2005.11401-Retrieval-Augmented-Generation-for-Knowledge-Intensive-NLP-Tasks.md, raw/papers/2310.11511-Self-RAG-Learning-to-Retrieve-Generate-and-Critique-through-Self-Reflection.md, raw/papers/2401.15884-Corrective-Retrieval-Augmented-Generation.md, raw/papers/2403.14403-Adaptive-RAG-Learning-to-Adapt-Retrieval-Augmented-Large-Language-Models-through.md, raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Query-Focused-Summarization.md]
+sources: [raw/papers/2005.11401-Retrieval-Augmented-Generation-for-Knowledge-Intensive-NLP-Tasks.html, raw/papers/2310.11511-Self-RAG-Learning-to-Retrieve-Generate-and-Critique-through-Self-Reflection.html, raw/papers/2401.15884-Corrective-Retrieval-Augmented-Generation.html, raw/papers/2403.14403-Adaptive-RAG-Learning-to-Adapt-Retrieval-Augmented-Large-Language-Models-through.pdf, raw/papers/2404.16130-From-Local-to-Global-A-Graph-RAG-Approach-to-Query-Focused-Summarization.html]
 ---
 
 # RAG 方法对比
@@ -45,7 +45,7 @@ Query → [动态路由] → 无需检索直接生成 / 单次检索 / 多步检
     查询复杂度评估 (分类器)
 ```
 
-根据查询复杂度自适应选择策略，简单问题直接回答，复杂问题多步检索。[[raw/papers/2403.14403-Adaptive-RAG-Learning-to-Adapt-Retrieval-Augmented-Large-Language-Models-through.html]]
+根据查询复杂度自适应选择策略，简单问题直接回答，复杂问题多步检索。[[raw/papers/2403.14403-Adaptive-RAG-Learning-to-Adapt-Retrieval-Augmented-Large-Language-Models-through.pdf]]
 
 ### GraphRAG
 
@@ -94,7 +94,7 @@ Naive RAG → Self-RAG/CRAG/Adaptive (反思+自适应) → GraphRAG (结构化�
 
 ## 相关链接
 
-- [[rag]] — RAG 基础概念
+- [[retrieval-augmented-generation]] — RAG 基础概念
 - [[graph-rag]] — GraphRAG 详解
 - [[dense-passage-retrieval]] — 检索基础
 - [[embedding-models-2025]] — Embedding 模型选型

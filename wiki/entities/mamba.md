@@ -1,15 +1,15 @@
 ---
 title: Mamba SSM
 created: 2026-05-10
-updated: 2026-05-10
+updated: 2026-05-14
 type: entity
 tags: [model, architecture, deeplearning, optimization]
-sources: [raw/papers/2312.00752-Mamba-Linear-Time-Sequence-Modeling.md]
+sources: [raw/papers/2312.00752-Mamba-Linear-Time-Sequence-Modeling.pdf]
 ---
 
 # Mamba SSM
 
-Mamba 是一种基于选择性状态空间模型（Selective State Space Model）的序列建模架构，由 Tri Dao 和 Albert Gu 提出。Mamba 实现了线性时间复杂度的序列建模，在推理效率上显著优于基于 [[transformer-architecture]] 的注意力机制。[[raw/papers/2312.00752-Mamba-Linear-Time-Sequence-Modeling.html]]
+Mamba 是一种基于选择性状态空间模型（Selective State Space Model）的序列建模架构，由 Tri Dao 和 Albert Gu 提出。Mamba 实现了线性时间复杂度的序列建模，在推理效率上显著优于基于 [[transformer-architecture]] 的注意力机制。[[raw/papers/2312.00752-Mamba-Linear-Time-Sequence-Modeling.pdf]]
 
 ## 核心动机
 
@@ -51,8 +51,8 @@ Mamba 在多个领域展现出竞争力：
 
 实际应用中，Mamba 常与 [[transformer-architecture]] 结合使用：
 
-- [[jamba]] 将 Mamba 层与 Attention 层交替堆叠
-- [[griffin]] 结合 Gated Linear Recurrences 与 Local Attention
+- Jamba 将 Mamba 层与 Attention 层交替堆叠
+- Griffin 结合 Gated Linear Recurrences 与 Local Attention
 
 ## 局限性
 
@@ -62,4 +62,4 @@ Mamba 在多个领域展现出竞争力：
 
 ## 影响
 
-Mamba 开辟了超越 Transformer 的序列建模新方向，激发了学术界对线性时间序列模型的广泛研究。
+Mamba 开辟了超越 Transformer 的序列建模新方向，激发了学术界对线性时间序列模型的广泛研究。其 selective scan 设计与 [[deepseek]] 等团队的高效推理优化方向相呼应。
