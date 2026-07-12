@@ -98,7 +98,9 @@
   优先消费 picks 队列，空则按 current-focus 规则自选 → ljg-read 伴读推送 →
   伴读全文存 `notes/`、companion-log 记一行索引 → git push。
   不去重：薄弱点还在就换角度继续推。
-- **Claude 挖掘（周任务，任一机器人工发起）**：读 companion-log + 近期 wiki 活动 →
+- **Claude 挖掘（每日 8:00 云端 routine「每日选片挖掘」自动运行，
+  管理入口 claude.ai/code/routines；深度挖掘仍可随时人工发起）**：
+  读 companion-log + 近期 wiki 活动 →
   更新 current-focus 薄弱点 → 往 picks 补 3-5 条选片 →
   把上周反馈积极（"已懂"/有追问深挖）的伴读笔记提炼进 `concepts/`，
   其余留在 notes/ 沉底——伴读层的出口是知识层，不是无限堆积。
@@ -108,7 +110,8 @@
   ② **交叉一条**：从近期高反馈的伴读笔记里挑两篇做概念交叉
   （产出新洞见的切面，不是摘要），作为一条 pick 入队——
   跨切面连接正是"统一框架"类薄弱点要求的思维动作。
-- **周一提醒**：附带 inbox 待分诊数与 picks 队列余量，余量 ≤2 就该跑挖掘。
+- **周一提醒**：附带 inbox 待分诊数与 picks 队列余量。队列由每日挖掘自动
+  补满 5 条，余量 ≤2 说明云端 routine 可能停摆，去 claude.ai/code/routines 检查。
 - **反馈习惯（闭环命脉）**：读完伴读哪怕只回 hermes 一句话
   （"懂了"/"哪步没跟上"）——反馈只从 hermes 会话回收，
   留在脑子里或说给别人的都不算。
