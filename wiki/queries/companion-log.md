@@ -23,3 +23,5 @@
 
 ## 2026-07-13
 - 推送：InfoNCE 与 KL loss 同时学习，冗余吗？（命中：统一数学框架 + RAG / Embedding；对应 `wiki/notes/2026-07-13-infonce-vs-kl.md`）
+- 反馈：已懂并确认在其场景中，KL 蒸馏 teacher 软标签，与 InfoNCE 互补。
+- 反馈：新问题：请求介绍 SPLADE 召回方式。
