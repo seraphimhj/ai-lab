@@ -20,3 +20,6 @@
 - 反馈：已懂并认可“MLE 是原则，NLL/交叉熵是优化形式，KL 是分布解释”的总结。
 - 反馈：提出 Margin MSE 与 DPO 思想相似，抓住了二者学习相对偏好差值的共同骨架。
 - 反馈：新问题：InfoNCE 与 KL loss 同时学习是否冗余。
+
+## 2026-07-13
+- 推送：InfoNCE 与 KL loss 同时学习，冗余吗？（命中：统一数学框架 + RAG / Embedding；对应 `wiki/notes/2026-07-13-infonce-vs-kl.md`）
