@@ -94,14 +94,17 @@
 | `companion-log.md` | hermes（每日推送记录 + 回收反馈） | Claude 挖掘薄弱点 |
 | `picks.md` | Claude（本地/工作机写选片队列） | hermes 优先消费 |
 
-- **hermes 每日 9:00**：git pull → 补漏昨夜 23:30 后的反馈 →
+- **hermes 每日 9:00**：git pull → 若远端有 `mining/*` 兜底分支
+  （云端挖掘推 main 失败时的落点），先 merge 进 main、删除该分支再继续 →
+  补漏昨夜 23:30 后的反馈 →
   优先消费 picks 队列，空则按 current-focus 规则自选 → ljg-read 伴读推送 →
   伴读全文存 `notes/`、companion-log 记一行索引 → git push。
   不去重：薄弱点还在就换角度继续推。
 - **hermes 每晚 23:30（夜间反馈回收）**：把当天你回给 hermes 的反馈提炼进
-  companion-log 并推送——这样次日 8:00 的云端挖掘就能读到当天反馈，
+  companion-log 并推送——这样次日 4:00 的云端挖掘就能读到当天反馈，
   反馈生效周期从两天缩到一天内。23:30 后才回的反馈由次日 9:00 补漏。
-- **Claude 挖掘（每日 8:00 云端 routine「每日选片挖掘」自动运行，
+- **Claude 挖掘（每日 4:00 云端 routine「每日选片挖掘」自动运行，
+  避开 hermes 9:00 前后的 companion-log 推送竞争窗口；
   管理入口 claude.ai/code/routines；深度挖掘仍可随时人工发起）**：
   读 companion-log + 近期 wiki 活动 →
   更新 current-focus 薄弱点 → 往 picks 补 3-5 条选片 →
