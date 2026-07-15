@@ -28,3 +28,6 @@
 
 ## 2026-07-14
 - 推送：为什么生成比训练慢：KV cache 的内存账与 PagedAttention（命中：retrieval 以外·推理系统；对应 `wiki/notes/2026-07-14-kv-cache-paged-attention.md`）
+
+## 2026-07-15
+- 推送：SPLADE——把“查询扩展”学进 30K 维词表（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-15-splade-learned-sparse-retrieval.md`）
