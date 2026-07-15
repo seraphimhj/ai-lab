@@ -31,3 +31,4 @@
 
 ## 2026-07-15
 - 推送：SPLADE——把“查询扩展”学进 30K 维词表（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-15-splade-learned-sparse-retrieval.md`）
+- 反馈：首次微信投递因限流未收到，用户要求重新推送当天伴读。
