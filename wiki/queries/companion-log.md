@@ -32,3 +32,6 @@
 ## 2026-07-15
 - 推送：SPLADE——把“查询扩展”学进 30K 维词表（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-15-splade-learned-sparse-retrieval.md`）
 - 反馈：首次微信投递因限流未收到，用户要求重新推送当天伴读。
+
+## 2026-07-16
+- 推送：数据和参数怎么分钱——Chinchilla 与 Scaling Laws（命中：retrieval 以外·预训练 + 端到端闭环·数据环节；对应 `wiki/notes/2026-07-16-chinchilla-scaling-laws.md`）
