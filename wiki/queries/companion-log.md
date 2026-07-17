@@ -35,3 +35,6 @@
 
 ## 2026-07-16
 - 推送：数据和参数怎么分钱——Chinchilla 与 Scaling Laws（命中：retrieval 以外·预训练 + 端到端闭环·数据环节；对应 `wiki/notes/2026-07-16-chinchilla-scaling-laws.md`）
+
+## 2026-07-17
+- 推送：你的评测集是从哪个分布采的？——benchmark 失效的三种方式（命中：端到端闭环·评测环节 + 模型评估主线；对应 `wiki/notes/2026-07-17-benchmark-failure-distribution.md`）
