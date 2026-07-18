@@ -41,3 +41,4 @@
 
 ## 2026-07-18
 - 推送：RLHF 之后——DPO / KTO / GRPO 一张家谱（命中：retrieval 以外·后训练 + 统一数学框架；对应 `wiki/notes/2026-07-18-dpo-kto-grpo-family.md`）
+- 反馈：追问 SPLADE 的 MLM head 如何对 token 打分。
