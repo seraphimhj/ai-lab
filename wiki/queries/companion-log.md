@@ -38,3 +38,6 @@
 
 ## 2026-07-17
 - 推送：你的评测集是从哪个分布采的？——benchmark 失效的三种方式（命中：端到端闭环·评测环节 + 模型评估主线；对应 `wiki/notes/2026-07-17-benchmark-failure-distribution.md`）
+
+## 2026-07-18
+- 推送：RLHF 之后——DPO / KTO / GRPO 一张家谱（命中：retrieval 以外·后训练 + 统一数学框架；对应 `wiki/notes/2026-07-18-dpo-kto-grpo-family.md`）
