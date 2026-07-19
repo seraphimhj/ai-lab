@@ -42,3 +42,6 @@
 ## 2026-07-18
 - 推送：RLHF 之后——DPO / KTO / GRPO 一张家谱（命中：retrieval 以外·后训练 + 统一数学框架；对应 `wiki/notes/2026-07-18-dpo-kto-grpo-family.md`）
 - 反馈：追问 SPLADE 的 MLM head 如何对 token 打分。
+
+## 2026-07-19
+- 推送：SPLADE 的 MLM head 到底怎么给一个词打分——从 30K 维 logits 到稀疏权重（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-19-splade-mlm-head-term-scoring.md`）
