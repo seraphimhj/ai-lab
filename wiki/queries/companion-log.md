@@ -45,3 +45,6 @@
 
 ## 2026-07-19
 - 推送：SPLADE 的 MLM head 到底怎么给一个词打分——从 30K 维 logits 到稀疏权重（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-19-splade-mlm-head-term-scoring.md`）
+
+## 2026-07-20
+- 推送：Agent 的多步闭环——误差如何在 ReAct 循环里复合（命中：端到端闭环·偏差传导 + Agent / 工具使用 / 上下文工程主线；对应 `wiki/notes/2026-07-20-react-agent-error-compounding.md`）
