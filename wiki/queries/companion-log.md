@@ -52,3 +52,6 @@
 ## 2026-07-21
 - 推送：两次架构革命都守着同一条边界——让出「路径」，钉死「指南针」（命中：端到端闭环·评测环节 + 模型评估主线；对应 `wiki/notes/2026-07-21-path-and-compass.md`）
 - 反馈：新问题：Embedding 模型如何解决实体 mismatch。
+
+## 2026-07-22
+- 推送：Embedding 为什么会认错实体？——从单向量 mismatch 到三条修法（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-22-embedding-entity-mismatch.md`）
