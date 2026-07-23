@@ -55,3 +55,6 @@
 
 ## 2026-07-22
 - 推送：Embedding 为什么会认错实体？——从单向量 mismatch 到三条修法（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-22-embedding-entity-mismatch.md`）
+
+## 2026-07-23
+- 推送：投机解码——用小模型猜，大模型一次并行验（命中：retrieval 以外·推理系统；对应 `wiki/notes/2026-07-23-speculative-decoding-latency.md`）
