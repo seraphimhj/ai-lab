@@ -144,3 +144,9 @@
   - rag-approaches: sources 格式修正 .md → .html
 - Updated index.md: +1 concept（swe-agent）, page count 73→74
 - 论文覆盖统计：raw/papers/ 全部 70+ 篇论文均已映射到 wiki 页面
+
+## [2026-07-23] update | mining 反哺：伴读笔记回流概念层
+- react-agent: 新增「误差在闭环里如何复合」章节（p^H 的相关误差来源、四类污染注入点、context engineering 五接口拦截、observability/diagnosability/recoverability 三判据），反向链接 [[2026-07-20-react-agent-error-compounding]]；顺手去掉重复的「论文实验数据」块；updated 2026-05-14 → 2026-07-23
+- text-embedding: 新增「失败模式：实体 mismatch」章节（mean-pooling 淹没低频高信息 token、semantic similarity vs retrieval relevance、稀疏 exact-match / late interaction / entity-aware 难负例三条修法），反向链接 [[2026-07-22-embedding-entity-mismatch]]、交叉链 [[sparse-retrieval]] [[colbert-retrieval]]；updated → 2026-07-23
+- picks: 补 1 条至 5 条 pending——「推理系统的第三本账·吞吐 / continuous batching」，凑齐推理系统三本账（显存 07-14 / 延迟 07-23 / 吞吐）
+- current-focus: 刷新三条薄弱点「最后确认」（统一数学框架→07-18、端到端闭环→07-20、retrieval 以外→07-23），推理系统条目补「吞吐/batching」

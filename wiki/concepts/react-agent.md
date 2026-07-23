@@ -1,7 +1,7 @@
 ---
 title: ReAct — 推理与行动结合
 created: 2026-05-10
-updated: 2026-05-14
+updated: 2026-07-23
 type: concept
 tags: [agent, reasoning, tool-use]
 sources: [raw/papers/2210.03629-ReAct-Synergizing-Reasoning-and-Acting-in-Language-Models.html, raw/articles/llm-agent-core-principles-2026.html]
@@ -84,15 +84,30 @@ Yao et al. (2022) 在四个基准上评测 ReAct：
 
 关键发现：推理和行动的组合相比单独使用（纯 Reasoning 或纯 Acting）带来系统性优势。
 
-## 论文实验数据
+## 误差在闭环里如何复合
 
-Yao et al. (2022) 在四个基准上评测 ReAct：
-- **HotpotQA**：ReAct + CoT 组合方法超越纯 CoT，解决了幻觉和错误传播问题
-- **Fever 事实验证**：ReAct 通过 Wikipedia API 交互生成可解释的推理轨迹
-- **ALFWorld**：1-2 shot ReAct 比 imitation/RL 方法（训练 10³–10⁵ 样本）高 34% 绝对成功率
-- **WebShop**：ReAct 比 RL 方法高 10% 绝对成功率
+单步问答里一次预测错了，损失通常停在那一步；Agent 不同——`action_t` 会选择下一条数据、改写外部状态，`observation_t` 会被截断、摘要后再喂回下一轮，于是**错误会改变下一步看到的世界**。评估对象因此从「单步正确率」升级成「整条 trajectory 能否完成目标」。[[2026-07-20-react-agent-error-compounding]]
 
-关键发现：推理和行动的组合相比单独使用（纯 Reasoning 或纯 Acting）带来系统性优势。
+### 为什么长任务成功率近似指数衰减
+
+设任务须连续通过 H 个关键门，令 p 为「轨迹尚未偏离」条件下每步的可靠率，则 P(成功) ≈ p^H。关键在于：**这不需要假设各步误差独立**——恰恰相反，共享的模型偏见、同一句含糊指令、同一段错误上下文会制造高度相关的误差。更坏的是首次出错后可靠率会从 p 跌到更低的 q（模型基于错误实体继续搜、基于错误摘要继续规划）。所以该优化的不是「步数越少越好」，而是**不可恢复的错误暴露面**（有效 horizon = 必须串行成立、且无独立校验或恢复路径的关键门数）。
+
+### 四类污染注入点
+
+| 接口 | 改写的东西 | 危险 |
+|------|-----------|------|
+| Thought | 信念 | 把猜测写成「已确认」，语言流畅度掩盖证据等级 |
+| Action | 世界 | 错误的写/删/付款/merge 不可逆 |
+| Observation | 测量 | 截断丢限定条件、空值与失败码不分、外部文本被当指令 |
+| Context | 记忆 | 摘要把「未验证」压成事实、重复轨迹被当证据增强 |
+
+四者不是纯串行管线，而是每轮都回灌的耦合系统。
+
+### context engineering = 治理回灌通道，而非塞更多 token
+
+有效的上下文工程分布在回路每个接口，核心是限制**错误信息的写权限**、并保留可信恢复锚点：动作前把自由文本压成 typed schema + 参数/副作用校验；观察入上下文前区分 `empty/timeout/permission_denied/parse_error` 并让外部文本按不可信数据隔离；历史压缩时用分栏账本拆开 Goal / Facts(带 source) / Hypotheses / Plan / Failures；循环中挂 loop detector、按错误类型分配重试预算、checkpoint 重规划而非续喂脏轨迹；提交前做可执行断言（数字能否定位到 source span、实体 ID 是否全程一致）而非「请再检查一遍」这种同分布反思。
+
+闭环收敛还是发散，取决于三个变量：**observability**（错误是否在反馈里留下可辨信号）、**diagnosability**（能否区分无结果/工具故障/参数错/假设错）、**recoverability**（识别后有无回退换路）。三者弱时，多加一轮反思只是给错误更多自我解释的机会——尤其当 evaluator、反思器、执行器同源、共享同一盲点时，「自检」可能只是相关错误的多数投票。
 
 ## 局限性
 

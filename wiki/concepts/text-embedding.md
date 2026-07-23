@@ -1,7 +1,7 @@
 ---
 title: 文本嵌入/向量化
 created: 2026-05-10
-updated: 2026-05-14
+updated: 2026-07-23
 type: concept
 tags: [embedding, representation, retrieval]
 sources: [raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.html, raw/papers/2212.03533-Text-Embeddings-by-Weakly-Supervised-Contrastive-Pre-training.html, raw/papers/2210.07316-MTEB-Massive-Text-Embedding-Benchmark.html, raw/papers/2402.03216-M3-Embedding-Multi-Linguality-Multi-Functionality-Multi-Granularity-Text-Embeddi.html, raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.html, raw/papers/2407.15831-NV-Retriever-Improving-text-embedding-models-with-effective-hard-negative-mining.html, raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.html, raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.html]
@@ -86,6 +86,22 @@ MTEB（Massive Text Embedding Benchmark）[[raw/papers/2210.07316-MTEB-Massive-T
 | Hard Negative Mining | 挖掘难负样本提升区分度 |
 | Instruction Tuning | 指令条件嵌入 |
 | Matryoshka Representation | 多粒度嵌入，支持降维 |
+
+## 失败模式：实体 mismatch
+
+Dense 单向量检索有一个系统性失败：查询「A 公司 2025 年营收」会把「B 公司 2025 年营收」排在「A 公司 2024 年营收」之前——**话题相似压过了身份差异**。[[2026-07-22-embedding-entity-mismatch]]
+
+根因在编码链条的两步：mean-pooling 把整句压成一个点时，专名/型号/数字这类**低频但高信息**的 token 贡献被高频语义词淹没；cosine 相似度随之由话题语义主导，而非那个具体实体。更深一层，dense embedding 常被训练成逼近 **semantic similarity**（两段话在谈相近的事），却被系统拿来近似 **retrieval relevance**（这段话能否回答这个具体查询）——两者恰恰在实体敏感的查询上分道扬镳。
+
+三条把身份信号补回来的修法，各在不同环节拦截：
+
+| 修法 | 补在哪一环 | 机制 |
+|------|-----------|------|
+| 稀疏 exact-match（[[sparse-retrieval]] / BM25） | 词表层 | 保住专名的字面命中，在混合检索里当身份锚 |
+| late interaction（[[colbert-retrieval]] MaxSim） | 检索时匹配层 | 保留每个 token 向量、逐 token 匹配，实体 token 不被过早 pooling 抹掉 |
+| entity-aware 难负例 | 训练目标层 | 用「只换实体」的难负例逼模型学到「换个实体即负样本」，改写相似性边界 |
+
+一句话：mismatch 的病根在「过早聚合把决定性的少数信号抹平」，三条修法的共性是「拒绝过早聚合、把实体维度单独保住」。
 
 ## 相关概念
 
