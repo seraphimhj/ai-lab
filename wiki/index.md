@@ -2,7 +2,7 @@
 
 > Content catalog. Every wiki page listed under its type with a one-line summary.
 > Read this first to find relevant pages for any query.
-> Last updated: 2026-05-15 | Total pages: 74 (28 entities + 39 concepts + 7 comparisons)
+> Last updated: 2026-07-24 | Total pages: 75 (28 entities + 40 concepts + 7 comparisons)
 
 ## Entities
 
@@ -70,6 +70,7 @@
 - [[in-context-learning]] — In-Context Learning，GPT-3 验证的大规模少样本能力
 
 ### 效率优化
+- [[llm-inference-serving]] — 推理服务三本账（显存 PagedAttention / 延迟 投机解码 / 吞吐 continuous batching）
 - [[flash-attention]] — FlashAttention 1/2/3，IO-aware 精确注意力加速
 - [[model-quantization]] — 模型量化 (GPTQ/AWQ/SparseGPT)，推理加速显存优化
 - [[mixture-of-experts]] — MoE 稀疏专家混合，参数量/计算量解耦

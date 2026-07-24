@@ -150,3 +150,10 @@
 - text-embedding: 新增「失败模式：实体 mismatch」章节（mean-pooling 淹没低频高信息 token、semantic similarity vs retrieval relevance、稀疏 exact-match / late interaction / entity-aware 难负例三条修法），反向链接 [[2026-07-22-embedding-entity-mismatch]]、交叉链 [[sparse-retrieval]] [[colbert-retrieval]]；updated → 2026-07-23
 - picks: 补 1 条至 5 条 pending——「推理系统的第三本账·吞吐 / continuous batching」，凑齐推理系统三本账（显存 07-14 / 延迟 07-23 / 吞吐）
 - current-focus: 刷新三条薄弱点「最后确认」（统一数学框架→07-18、端到端闭环→07-20、retrieval 以外→07-23），推理系统条目补「吞吐/batching」
+
+## [2026-07-24] update | mining 反哺 + 新建推理服务概念页
+- colbert-retrieval（反哺）: 新增「交互推迟到哪一步」统一轴 + 实体 mismatch 手算 + MUVERA/FDE 保相似度编译 + 延迟物化同构章节，反向链接 [[2026-07-24-late-interaction-muvera]]、补交叉链 [[sparse-retrieval]]；updated 2026-05-14 → 2026-07-24
+- llm-inference-serving（新建）: 合并 07-14 KV cache/PagedAttention 与 07-23 投机解码两篇伴读笔记为「显存/延迟/吞吐三本账」概念页，含 PagedAttention 分页解法、投机解码接受率 α 闸门、判断框架，反向链接 [[2026-07-14-kv-cache-paged-attention]] [[2026-07-23-speculative-decoding-latency]]，交叉链 [[flash-attention]] [[model-quantization]] [[mixture-of-experts]] [[scaling-laws]]
+- Updated index.md: +1 concept（llm-inference-serving，效率优化区）, page count 74→75（39→40 concepts）
+- picks: 补 1 条至 5 条 pending——「MoE：参数量/计算量解耦的两笔账」（连接度信号 mixture-of-experts/scaling-laws 活跃，把推理账抬到架构容量层）
+- current-focus: 刷新「retrieval 以外」最后确认 07-23 → 07-24（新建 inference-serving 页 + MoE pick 支持推理系统/预训练 gap 仍活跃），条目补 MoE 容量账并挂 [[llm-inference-serving]]
