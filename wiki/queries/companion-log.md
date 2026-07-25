@@ -61,3 +61,6 @@
 
 ## 2026-07-24
 - 推送：Late Interaction 与 MUVERA——交互究竟应该发生在哪一步？（命中：RAG / 检索 / Embedding 主线；对应 `wiki/notes/2026-07-24-late-interaction-muvera.md`）
+
+## 2026-07-25
+- 推送：「平均」如何在编码端和评测端抹掉决定性少数信号（命中：端到端闭环 + 模型评估 + RAG / Embedding；对应 `wiki/notes/2026-07-25-aggregation-erases-minority-signals.md`）
