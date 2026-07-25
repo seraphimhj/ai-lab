@@ -1,7 +1,7 @@
 ---
 title: 文本嵌入/向量化
 created: 2026-05-10
-updated: 2026-07-23
+updated: 2026-07-25
 type: concept
 tags: [embedding, representation, retrieval]
 sources: [raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.html, raw/papers/2212.03533-Text-Embeddings-by-Weakly-Supervised-Contrastive-Pre-training.html, raw/papers/2210.07316-MTEB-Massive-Text-Embedding-Benchmark.html, raw/papers/2402.03216-M3-Embedding-Multi-Linguality-Multi-Functionality-Multi-Granularity-Text-Embeddi.html, raw/papers/2405.17428-NV-Embed-Improved-Techniques-for-Training-LLMs-as-Generalist-Embedding-Models.html, raw/papers/2407.15831-NV-Retriever-Improving-text-embedding-models-with-effective-hard-negative-mining.html, raw/papers/2506.05176-Qwen3-Embedding-Advancing-Text-Embedding-and-Reranking-Through-Foundation-Models.html, raw/papers/2602.15547-jina-embeddings-v5-text-Task-Targeted-Embedding-Distillation.html]
@@ -103,9 +103,25 @@ Dense 单向量检索有一个系统性失败：查询「A 公司 2025 年营收
 
 一句话：mismatch 的病根在「过早聚合把决定性的少数信号抹平」，三条修法的共性是「拒绝过早聚合、把实体维度单独保住」。
 
+### 更一般的病灶：过早聚合与「可聚合性」四问
+
+实体 mismatch 不是 embedding 独有的 bug，而是一种结构性病灶的编码端实例：**聚合保留一个总量，却丢弃贡献者的身份与分布**（`z = Σ w_i·x_i` 是多对一映射，从 `z` 无法还原谁强谁弱）。同一种病在评测端复现——总体准确率把关键切片淹进多数样本（详见 [[benchmark-evaluation]]）。点积天然允许**补偿**：实体维少掉的分可被话题、句式、领域相似度补回来，于是「必须满足的硬约束」退化成「可被其他相似性抵消的一项特征」。[[2026-07-25-aggregation-erases-minority-signals]]
+
+判断一次聚合（mean-pooling 或任何 `[CLS]`/learned pooling）是否安全，问四件事——只要有一个否定，就该在聚合前保住结构：
+
+```text
+可交换   各项身份不重要，换位不改决策       实体「苹果↔微软」换位会改答案主体 → 否
+可补偿   一项差可被另一项好抵消             实体错不该由话题像来补偿           → 否
+近似同质 各项测量的是相近性质               实体/时间/否定承担不同语义角色      → 否
+线性效用 总损失≈各项损失加权和             一个硬约束失败可令整段文档无关       → 否
+```
+
+这也是 Goodhart 定律的前置版本：通常说「指标成为目标后不再是好指标」，这里更早一步——**指标在被聚合出来的那一刻，可能就已不代表目标**。embedding 单向量和 benchmark 总分都是面向下游决策的「有损摘要」（像数据库优化器用 histogram 估行数会抹掉列间相关性）；真正的问题永远是：它丢掉的那一维相关性，恰不恰好是你的任务最在乎的那一条。
+
 ## 相关概念
 
 - [[dense-passage-retrieval]] — Embedding 在检索中的应用
 - [[colbert-retrieval]] — Token 级别的交互式嵌入
+- [[benchmark-evaluation]] — 编码端 mismatch 与评测端聚合掩盖同构，都是过早聚合抹掉少数信号
 - [[retrieval-augmented-generation]] — Embedding 是 RAG 的基础
 - [[model-quantization]] — Embedding 模型的部署优化

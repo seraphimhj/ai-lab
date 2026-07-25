@@ -157,3 +157,10 @@
 - Updated index.md: +1 concept（llm-inference-serving，效率优化区）, page count 74→75（39→40 concepts）
 - picks: 补 1 条至 5 条 pending——「MoE：参数量/计算量解耦的两笔账」（连接度信号 mixture-of-experts/scaling-laws 活跃，把推理账抬到架构容量层）
 - current-focus: 刷新「retrieval 以外」最后确认 07-23 → 07-24（新建 inference-serving 页 + MoE pick 支持推理系统/预训练 gap 仍活跃），条目补 MoE 容量账并挂 [[llm-inference-serving]]
+
+## [2026-07-25] update | mining 反哺 + 新建模型评估概念页
+- benchmark-evaluation（新建）: 把三篇评测伴读（07-17 benchmark 失效三态 / 07-21 让权指南针·LLM-as-judge / 07-25 聚合抹掉少数信号）聚成「模型评估」主线首个概念页——benchmark 作为有限样本估计器、独立性/非适应性/代表性三支柱对应 contamination/Goodhart/drift、聚合掩盖关键切片、LLM-as-judge 共盲/迎合/自证三失效、评测身份证八问 + 四层评测栈、评测偏差经选模反向注入端到端闭环；反向链接 [[2026-07-17-benchmark-failure-distribution]] [[2026-07-21-path-and-compass]] [[2026-07-25-aggregation-erases-minority-signals]]，交叉链 [[text-embedding]] [[colbert-retrieval]] [[sparse-retrieval]] [[rlhf]] [[constitutional-ai]] [[scaling-laws]]
+- text-embedding（反哺·硬性）: 在实体 mismatch 段后新增「更一般的病灶：过早聚合与可聚合性四问」——把 mismatch 还原为聚合病灶的编码端实例、点积的补偿性、可交换/可补偿/同质/线性效用四问、Goodhart 前置版与有损摘要类比，反向链接 [[2026-07-25-aggregation-erases-minority-signals]]、交叉链 [[benchmark-evaluation]]；updated 2026-07-23 → 2026-07-25
+- Updated index.md: +1 concept（benchmark-evaluation，新增「模型评估」区）, page count 75→76（40→41 concepts）
+- picks: 补 1 条至 5 条 pending——「LLM-as-judge 的系统性偏置与去偏」（递进 07-21/07-25，落到评委那本偏置账，pairs with 新建 benchmark-evaluation 页）
+- current-focus: 刷新「端到端闭环」最后确认 07-20 → 07-25（07-25 伴读打通编码端/评测端聚合病灶 + 评测偏差反向注入数据环，已聚成 benchmark-evaluation 页）

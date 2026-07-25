@@ -2,7 +2,7 @@
 
 > Content catalog. Every wiki page listed under its type with a one-line summary.
 > Read this first to find relevant pages for any query.
-> Last updated: 2026-07-24 | Total pages: 75 (28 entities + 40 concepts + 7 comparisons)
+> Last updated: 2026-07-25 | Total pages: 76 (28 entities + 41 concepts + 7 comparisons)
 
 ## Entities
 
@@ -99,6 +99,9 @@
 
 ### Embedding
 - [[text-embedding]] — 文本嵌入/向量化，Sentence-BERT → E5 → BGE-M3 → Qwen3-Embedding
+
+### 模型评估
+- [[benchmark-evaluation]] — benchmark 作为估计器，contamination/Goodhart/drift 三失效 + LLM-as-judge 闭环 + 聚合掩盖切片
 
 ### 代码生成
 - [[code-generation]] — 代码模型（StarCoder/CodeLlama/DeepSeek-Coder），FIM + 仓库级上下文
