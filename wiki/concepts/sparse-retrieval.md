@@ -1,7 +1,7 @@
 ---
 title: Sparse Retrieval
 created: 2026-05-14
-updated: 2026-05-14
+updated: 2026-07-26
 type: concept
 tags: [retrieval, embedding, nlp, rag]
 sources: [raw/papers/2109.10086-SPLADE-v2-Sparse-Lexical-and-Expansion-Model-for-Information-Retrieval.html]
@@ -58,6 +58,16 @@ SPLADE（SParse Lexical AnD Expansion model）用 [[bert]] 的 MLM head 为文�
 - 通过 RRF（Reciprocal Rank Fusion）或线性加权融合结果
 
 这正是 [[colbert-retrieval]] 之外的另一种"两全其美"方案。
+
+## 从「过早聚合」看稀疏检索：给否决型信号留独立账目
+
+把 SPLADE/BM25 放到「过早聚合」这条轴上，会得到一个比"精确匹配强"更结构化的解释 [[2026-07-25-aggregation-erases-minority-signals]]：
+
+[[dense-passage-retrieval|Dense 单向量]]在**检索前**就把整句压成一个点，实体名这类低频高信息 token 的贡献被话题语义淹没，而点积又允许"实体维少掉的分被话题维补回来"——于是"苹果营收"召回"微软营收"。SPLADE 的词表维相当于**给否决型信号留一个独立账目**：实体的字面命中落在它自己的一维上，不必先并进整体语义方向，因此不容易被话题相似度补偿掉。这也是它在上表"精确匹配"一栏对 dense 占优的机制根因——不是"匹配更准"，而是**把聚合推迟、让实体维单独结算**。
+
+但要点是：推迟聚合 ≠ 永不聚合。SPLADE 的最终相关性仍是所有词表维上的**求和**，若其他词项分数足够多，实体错配仍可能被补偿。真正需要"实体错即淘汰"的硬约束场景，还得在稀疏召回之外叠 lexical filter / entity linker / metadata 约束兜底——稀疏检索给了实体一个独立发言的维度，但没有把它升级成不可协商的一票。
+
+这条"哪一步聚合、就决定哪种信号被抹掉"的轴，把稀疏检索、[[colbert-retrieval]] 的 MaxSim（逐 token 独立验收）与评测端的 worst-group / slice 指标串成同一病灶（[[benchmark-evaluation]]）的三处同构修法：编码/检索端保留局部维度、评测端保留数据切片，最后都按真实业务风险而非样本频率再聚合。
 
 ## 与 [[text-embedding]] 的关系
 

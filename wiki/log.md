@@ -164,3 +164,8 @@
 - Updated index.md: +1 concept（benchmark-evaluation，新增「模型评估」区）, page count 75→76（40→41 concepts）
 - picks: 补 1 条至 5 条 pending——「LLM-as-judge 的系统性偏置与去偏」（递进 07-21/07-25，落到评委那本偏置账，pairs with 新建 benchmark-evaluation 页）
 - current-focus: 刷新「端到端闭环」最后确认 07-20 → 07-25（07-25 伴读打通编码端/评测端聚合病灶 + 评测偏差反向注入数据环，已聚成 benchmark-evaluation 页）
+
+## [2026-07-26] update | mining 反哺：聚合病灶接上检索端
+- sparse-retrieval（反哺·硬性）: 新增「从『过早聚合』看稀疏检索：给否决型信号留独立账目」章节——把 SPLADE 词表维还原为「拒绝在编码端过早聚合」（实体命中落在独立维、不必先并进整体语义方向、不被话题相似度补偿），点明这是它在「精确匹配」栏对 dense 占优的机制根因；并加限定「推迟聚合≠永不聚合」（SPLADE 总分仍求和，硬约束需 lexical filter/entity linker 兜底）；把稀疏词表维 / ColBERT MaxSim / 评测端 slice 串成同一病灶三处同构修法。反向链接 [[2026-07-25-aggregation-erases-minority-signals]]，交叉链 [[dense-passage-retrieval]] [[colbert-retrieval]] [[benchmark-evaluation]] [[text-embedding]]；updated 2026-05-14 → 2026-07-26
+- current-focus: 刷新「端到端闭环」最后确认 07-25 → 07-26（07-26 反哺把聚合病灶从编码端/评测端接到检索端，SPLADE 词表维/ColBERT MaxSim 是召回环的同构修法，新增链接支持该薄弱点仍活跃）
+- picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、无需微调，不动
