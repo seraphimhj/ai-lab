@@ -169,3 +169,8 @@
 - sparse-retrieval（反哺·硬性）: 新增「从『过早聚合』看稀疏检索：给否决型信号留独立账目」章节——把 SPLADE 词表维还原为「拒绝在编码端过早聚合」（实体命中落在独立维、不必先并进整体语义方向、不被话题相似度补偿），点明这是它在「精确匹配」栏对 dense 占优的机制根因；并加限定「推迟聚合≠永不聚合」（SPLADE 总分仍求和，硬约束需 lexical filter/entity linker 兜底）；把稀疏词表维 / ColBERT MaxSim / 评测端 slice 串成同一病灶三处同构修法。反向链接 [[2026-07-25-aggregation-erases-minority-signals]]，交叉链 [[dense-passage-retrieval]] [[colbert-retrieval]] [[benchmark-evaluation]] [[text-embedding]]；updated 2026-05-14 → 2026-07-26
 - current-focus: 刷新「端到端闭环」最后确认 07-25 → 07-26（07-26 反哺把聚合病灶从编码端/评测端接到检索端，SPLADE 词表维/ColBERT MaxSim 是召回环的同构修法，新增链接支持该薄弱点仍活跃）
 - picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、无需微调，不动
+
+## [2026-07-27] update | mining 反哺：过早聚合病灶接回 dense 编码端本身
+- dense-passage-retrieval（反哺·硬性）: 新增「失败模式：单向量瓶颈不是『交互不够深入』而是一次不可逆的过早聚合」+「一根轴看清 DPR 的位置：交互被安排在链条哪一步」两节——把原表里含糊的「交互不够深入」拆成接口约束（passage 编码时不知未来 query、只能预揉异质信息进一个点、局部硬约束退化成可补偿特征），点明这是实体 mismatch 的编码端根因、且非 mean-pooling 独有（[CLS]/learned pooling 同受信息瓶颈）；用「交互发生在哪一步」轴把 dense/[[sparse-retrieval]]/[[colbert-retrieval]]/cross-encoder 串成同一病灶的四处修法，接上 MUVERA 保相似度编译与 dense→ColBERT 精排管线。反向链接 [[2026-07-24-late-interaction-muvera]]，交叉链 [[text-embedding]] [[benchmark-evaluation]]；顺手删去重复的 [[in-context-learning]] 关系行；updated 2026-05-14 → 2026-07-27
+- current-focus: 刷新「端到端闭环」最后确认 07-26 → 07-27（07-27 反哺把「过早聚合抹掉少数信号」从检索端接回 dense 编码端本身，DPR 单向量瓶颈=编码端过早聚合，新增链接支持该薄弱点仍活跃）
+- picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、上周内已有交叉 pick（07-25 实体mismatch×benchmark），无需微调，不动
