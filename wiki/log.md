@@ -174,3 +174,9 @@
 - dense-passage-retrieval（反哺·硬性）: 新增「失败模式：单向量瓶颈不是『交互不够深入』而是一次不可逆的过早聚合」+「一根轴看清 DPR 的位置：交互被安排在链条哪一步」两节——把原表里含糊的「交互不够深入」拆成接口约束（passage 编码时不知未来 query、只能预揉异质信息进一个点、局部硬约束退化成可补偿特征），点明这是实体 mismatch 的编码端根因、且非 mean-pooling 独有（[CLS]/learned pooling 同受信息瓶颈）；用「交互发生在哪一步」轴把 dense/[[sparse-retrieval]]/[[colbert-retrieval]]/cross-encoder 串成同一病灶的四处修法，接上 MUVERA 保相似度编译与 dense→ColBERT 精排管线。反向链接 [[2026-07-24-late-interaction-muvera]]，交叉链 [[text-embedding]] [[benchmark-evaluation]]；顺手删去重复的 [[in-context-learning]] 关系行；updated 2026-05-14 → 2026-07-27
 - current-focus: 刷新「端到端闭环」最后确认 07-26 → 07-27（07-27 反哺把「过早聚合抹掉少数信号」从检索端接回 dense 编码端本身，DPR 单向量瓶颈=编码端过早聚合，新增链接支持该薄弱点仍活跃）
 - picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、上周内已有交叉 pick（07-25 实体mismatch×benchmark），无需微调，不动
+
+## [2026-07-28] update | mining 反哺：把上下文工程翻到「写权限」那一面
+- context-engineering（反哺·硬性）: 该页此前从 2026-05-14 起未更新、无任何伴读反向链接，且近三日反哺全落在检索端（text-embedding/sparse/dense），本日转向 Agent 主线补链。新增「换个方向看：不是『塞多少』，而是『谁有写权限』」一节——把原页「本质都是往窗口塞信息」的填充量直觉翻面：多步闭环里决定成败的不是 token 数量而是错误信息能否拿到写权限，早期小偏差沿 [[react-agent]] 闭环自激放大；据此把上下文工程落成分布在五个接口的「写权限闸门」表（动作前 typed schema / 观察入窗前失败语义+不可信隔离 / 压缩时分栏账本 / 循环中 loop detector+重试预算 / 提交前可执行断言），并把原页开放问题里的「压缩 vs 精确填充 trade-off」重述为「压缩会不会把未验证压成已确认」、点出 observability/diagnosability/recoverability 三变量决定闭环收敛还是发散。反向链接 [[2026-07-20-react-agent-error-compounding]]；updated 2026-05-14 → 2026-07-28
+- picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、上周内已有交叉 pick（07-25 实体mismatch×benchmark），且本日 companion-log 无新反馈，无需微调，不动
+- current-focus: 无明确反馈证据，薄弱点定义不动；「端到端闭环」07-27 刚确认、本日反哺属同一偏差传导轴的 Agent 侧补链，不重复刷新日期
+- healthcheck: companion-log 静默 3 天（07-25 后无新条目、hermes 07-26/07-27 未推送 notes），已报 ERROR——反馈通道疑似停摆，本轮选片仅靠连接度替补信号，已提醒用户查 hermes cron
