@@ -180,3 +180,9 @@
 - picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、上周内已有交叉 pick（07-25 实体mismatch×benchmark），且本日 companion-log 无新反馈，无需微调，不动
 - current-focus: 无明确反馈证据，薄弱点定义不动；「端到端闭环」07-27 刚确认、本日反哺属同一偏差传导轴的 Agent 侧补链，不重复刷新日期
 - healthcheck: companion-log 静默 3 天（07-25 后无新条目、hermes 07-26/07-27 未推送 notes），已报 ERROR——反馈通道疑似停摆，本轮选片仅靠连接度替补信号，已提醒用户查 hermes cron
+
+## [2026-07-29] update | mining 反哺：给 RAG umbrella 页补「交互推迟到哪一步」统一轴
+- retrieval-augmented-generation（反哺·硬性）: 该页自 2026-05-14 起未更新、无任何伴读反向链接，且「检索方法」段一直是「稀疏/稠密/混合」的平铺菜单。近三日反哺已把「过早聚合/交互推迟到哪一步」这根轴分别接进 dense/sparse/colbert/text-embedding 四个下游页，本日把它上提到 RAG 伞页本身——新增「一根轴看清检索方法：query-doc 交互推迟到链条哪一步」一节，用一张谱表（DPR 单向量→SPLADE 词表维→ColBERT 逐 token MaxSim→cross-encoder 全交互）把散落的检索器按「交互在流水线哪一步算完」排成一条线，点明交互越早=doc 编码越是不可逆的过早聚合（低频实体被池化淹没）、越晚=保留信号维度越多但存储/延迟越贵，于是选检索器=用预算把交互往后推几步、Hybrid/多阶段是这条谱上的混搭；末尾接回「拒绝过早聚合」在评测端的同构修法（worst-group vs mean）。反向链接 [[2026-07-24-late-interaction-muvera]]，交叉链 [[dense-passage-retrieval]] [[sparse-retrieval]] [[colbert-retrieval]] [[text-embedding]] [[benchmark-evaluation]]；updated 2026-05-14 → 2026-07-29
+- picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、上周内已有交叉 pick（07-25 实体mismatch×benchmark），且 companion-log 自 07-25 起无新反馈/无新推送，无需微调，不动
+- current-focus: 无明确反馈证据，薄弱点定义不动；本日反哺属「端到端闭环·过早聚合」同一轴的召回端补链（07-27 刚确认），不重复刷新日期
+- healthcheck: companion-log 静默升至 4 天（ERROR）、hermes 自 07-25 后未推送任何 notes、picks 队列 5 条全无消费——本地 hermes agent 疑似连续 4 天停摆，反馈闭环中断，已再次提醒查 hermes cron status

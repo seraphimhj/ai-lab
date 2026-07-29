@@ -1,7 +1,7 @@
 ---
 title: RAG — 检索增强生成
 created: 2026-05-10
-updated: 2026-05-14
+updated: 2026-07-29
 type: concept
 tags: [retrieval, generation, agent]
 sources: [raw/papers/2005.11401-Retrieval-Augmented-Generation-for-Knowledge-Intensive-NLP-Tasks.html, raw/papers/2002.08909-REALM-Retrieval-Augmented-Language-Model-Pre-Training.html, raw/papers/2112.04426-Improving-language-models-by-retrieving-from-trillions-of-to.html]
@@ -62,6 +62,29 @@ DeepMind 的 RETRO 从 2T token 数据库中检索，用 chunked cross-attention
 - 结合稀疏和稠密检索（Hybrid Retrieval）
 - 通过 RRF 或线性加权融合
 - 通常效果最好
+
+## 一根轴看清检索方法：query-doc 交互推迟到链条哪一步
+
+上面把检索器按「稀疏 / 稠密 / 混合」分类，是按表示形态分的；但真正决定一个检索器
+召回什么、漏什么的，是另一根更本质的轴——**query 与 doc 的交互被安排在流水线的哪一步算完**。
+从「编码时就把交互算尽」到「检索时才逐 token 交互」排成一条谱，恰好把散落的方法串成一条线，
+也解释了它们各自的强项与死角。[[2026-07-24-late-interaction-muvera]]
+
+| 交互发生在 | 代表方法 | doc 侧存什么 | 强项 | 死角（漏什么） |
+|-----------|---------|-------------|------|---------------|
+| 编码时（最早） | [[dense-passage-retrieval|DPR]] 单向量 | 1 个向量 | 语义泛化、存储/检索最省 | 专名/型号被 mean-pool 淹没，实体 mismatch |
+| 编码时·保词表维 | [[sparse-retrieval\|SPLADE]]、BM25 | 稀疏词表权重 | 精确匹配、实体命中落在独立维 | 纯词面同义/改写覆盖弱 |
+| 检索时·逐 token | [[colbert-retrieval\|ColBERT]] MaxSim | 每 token 一个向量 | token 级精度，兼顾语义与实体 | 存储/延迟贵，需 MUVERA 之类压回 MIPS |
+| 检索后·全交互 | cross-encoder 重排 | 不预存，联合前向 | 精度上限最高 | 只能对 top-k 重排，跑不了全库 |
+
+**为什么这根轴比「稀疏/稠密」更有解释力**：交互越早算完，doc 编码时越是「不知道未来会来什么 query」，
+只能把异质信息预先揉进固定表示——这是一次**不可逆的过早聚合**，低频高信息的 token（那个具体实体）
+在求和/池化里被多数语义票淹没。交互推迟得越晚，doc 侧保留的信号维度越多、被话题相似度补偿掉的越少，
+代价是存储与检索开销上升。所以选检索器不是「谁效果好」，而是**能容忍多大的存储/延迟预算，去把交互往后推几步**；
+Hybrid 与多阶段（召回→重排）本质就是在这条谱上做混搭：用早交互的方法广撒网、用晚交互的方法在小集合上补精度。
+
+这条「拒绝过早聚合、把维度拆开单独看」的思路不止用于召回——在评测端它对应
+逐子集看 worst-group 而非只看 mean，是同一病灶在链条两端的同构修法（见 [[benchmark-evaluation]]、[[text-embedding]]）。
 
 ## 优化方向
 
