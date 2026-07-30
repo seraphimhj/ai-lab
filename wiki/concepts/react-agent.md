@@ -1,7 +1,7 @@
 ---
 title: ReAct — 推理与行动结合
 created: 2026-05-10
-updated: 2026-07-23
+updated: 2026-07-30
 type: concept
 tags: [agent, reasoning, tool-use]
 sources: [raw/papers/2210.03629-ReAct-Synergizing-Reasoning-and-Acting-in-Language-Models.html, raw/articles/llm-agent-core-principles-2026.html]
@@ -109,6 +109,19 @@ Yao et al. (2022) 在四个基准上评测 ReAct：
 
 闭环收敛还是发散，取决于三个变量：**observability**（错误是否在反馈里留下可辨信号）、**diagnosability**（能否区分无结果/工具故障/参数错/假设错）、**recoverability**（识别后有无回退换路）。三者弱时，多加一轮反思只是给错误更多自我解释的机会——尤其当 evaluator、反思器、执行器同源、共享同一盲点时，「自检」可能只是相关错误的多数投票。
 
+### Context 压缩：闭环里的第四处「过早聚合」
+
+上表 Context 行的危险——「摘要把『未验证』压成事实、重复轨迹被当证据增强」——不是 Agent 特有的新病，而是一个更一般病灶在回路里的复发：**过早聚合把决定性的少数信号抹掉**。它在编码端表现为单向量把低频实体淹进整句语义、在评测端表现为总体均值把关键切片压成一个数（[[2026-07-25-aggregation-erases-minority-signals]]）；到了 Agent，history compaction 就是同一个动作的第四处发作——把一长段异质轨迹（目标、带 source 的事实、未验证假设、失败码、一次越权动作的记录）聚合成一段流畅摘要时，被丢掉的正是「谁贡献了这条信息、它的证据等级如何」。
+
+```text
+病灶发作点          被聚合掉的少数信号
+编码端单向量        低频高信息 token（专名/型号）→ 被高频语义补偿
+评测端单指标        关键切片（安全/长尾/高损失组）→ 被多数样本稀释
+Agent context 压缩  单条未验证假设 / 失败码 / 越权动作 → 被摘要成「已确认事实」
+```
+
+这解释了为什么「多塞点 token 让模型再想想」救不了长任务：问题不在窗口不够大，而在压缩把「未验证」和「已确认」聚合进了同一层，硬约束（这一步到底核实过没有）退化成可被流畅叙述补偿的一项特征——和点积里实体维被话题相似度补偿是同一种可补偿性。所以修法也同构：**拒绝过早聚合、按风险再聚合**——分栏账本把 Goal / Facts(带 source) / Hypotheses / Failures 拆开存（对应检索端保留 token 向量 / 词表维、评测端保留 per-slice），让「未验证」始终占一个不被摘要抹平的独立账目；checkpoint 重规划而非续喂脏轨迹，就是「先暴露失败切片、再有意识地二次聚合」在时间维上的版本。
+
 ## 局限性
 
 - 行动空间需要预先定义
@@ -125,3 +138,8 @@ Yao et al. (2022) 在四个基准上评测 ReAct：
 - [[context-engineering]] — Agent 循环本质是不断往上下文追加内容
 - [[mcp-model-context-protocol]] — Agent 工具层的标准化接口
 - [[agent-skills]] — Agent 的可复用操作文档
+
+## 伴读来源
+
+- [[2026-07-20-react-agent-error-compounding]] — 误差沿闭环复合、有效 horizon、四类污染注入点、context engineering 治理回灌通道
+- [[2026-07-25-aggregation-erases-minority-signals]] — context 压缩是回路里第四处「过早聚合」，与编码端/评测端同构、分栏账本对应保留切片

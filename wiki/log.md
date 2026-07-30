@@ -186,3 +186,9 @@
 - picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、上周内已有交叉 pick（07-25 实体mismatch×benchmark），且 companion-log 自 07-25 起无新反馈/无新推送，无需微调，不动
 - current-focus: 无明确反馈证据，薄弱点定义不动；本日反哺属「端到端闭环·过早聚合」同一轴的召回端补链（07-27 刚确认），不重复刷新日期
 - healthcheck: companion-log 静默升至 4 天（ERROR）、hermes 自 07-25 后未推送任何 notes、picks 队列 5 条全无消费——本地 hermes agent 疑似连续 4 天停摆，反馈闭环中断，已再次提醒查 hermes cron status
+
+## [2026-07-30] update | mining 反哺：把「过早聚合」病灶接进 Agent 记忆环
+- react-agent（反哺·硬性）: 该页此前只从 07-20 note 讲了「误差沿闭环复合」，未与近一周 RAG/评测端系统梳理的「过早聚合抹掉少数信号」轴打通，且 07-25 那篇高价值交叉 note 尚未链入任何 Agent 页。本日在 context engineering 段后新增「Context 压缩：闭环里的第四处『过早聚合』」小节——把上表 Context 行的危险（摘要把未验证压成事实）还原为编码端单向量/评测端单指标同一病灶的第四处发作：history compaction 聚合一长段异质轨迹时丢掉的正是「谁贡献了、证据等级如何」，未验证假设/失败码/越权动作记录=这一环的少数信号；给出三处发作点对照表，点明「多塞 token 救不了长任务」是因为压缩把未验证与已确认聚合进同一层、硬约束退化成可被流畅叙述补偿的一项特征（同点积里实体维被话题相似度补偿）；修法同构——分栏账本(Goal/Facts带source/Hypotheses/Failures)对应检索端保留 token 向量/词表维、评测端 per-slice，checkpoint 重规划=时间维上的「先暴露失败切片再二次聚合」。反向链接 [[2026-07-25-aggregation-erases-minority-signals]]，并补建该页缺失的「伴读来源」段（列 07-20 / 07-25）；updated 2026-07-23 → 2026-07-30
+- current-focus: 刷新「端到端闭环」最后确认 07-27 → 07-30（新增 react-agent×07-25 链接把「过早聚合」病灶从编码/评测/检索三端扩到 Agent 记忆环第四处，新增链接支持该薄弱点仍活跃）；同步顶部「最后更新」→ 07-30
+- picks: 队列已满 5 条 pending（Self-RAG/CRAG、上下文工程四拦截、吞吐 continuous batching、MoE 两笔账、LLM-as-judge 去偏），序列完整、上周内已有交叉 pick（07-25 实体mismatch×benchmark），本日反哺本身即一次概念交叉（Agent 记忆×聚合病灶），无需微调，不动
+- healthcheck: companion-log 静默升至 5 天（ERROR）、hermes 自 07-25 后未推送任何 notes、picks 队列 5 条全无消费——本地 hermes agent 疑似连续 5 天停摆，9:00 伴读推送与反馈回收均中断，已通知用户查 hermes cron status
