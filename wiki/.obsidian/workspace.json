@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "SCHEMA.md",
+                "file": "notes/2026-07-16-chinchilla-scaling-laws.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "SCHEMA"
+              "title": "2026-07-16-chinchilla-scaling-laws"
             }
           }
         ]
@@ -184,8 +184,20 @@
       "obsidian-importer:Open Importer": false
     }
   },
-  "active": "e0b5bd2c2e44e09c",
+  "active": "f2869a8778ee9d85",
   "lastOpenFiles": [
+    "notes/2026-07-31-proper-scoring-rules-honest-probabilities.md",
+    "notes/2026-07-30-calibration-vs-ranking.md",
+    "notes/2026-07-29-moe-capacity-compute-routing.md",
+    "notes/2026-07-28-continuous-batching-throughput.md",
+    "notes/2026-07-26-grok-build-architecture.md",
+    "notes/2026-07-27-context-engineering-error-firebreaks.md",
+    "notes/2026-07-26-self-rag-crag-agentic-retrieval.md",
+    "notes/2026-07-15-splade-learned-sparse-retrieval.md",
+    "notes/2026-07-14-kv-cache-paged-attention.md",
+    "notes/2026-07-13-infonce-vs-kl.md",
+    "notes/2026-07-25-aggregation-erases-minority-signals.md",
+    "SCHEMA.md",
     "papers-reading-list.md",
     "log.md",
     "index.md",
@@ -205,22 +217,10 @@
     "raw/papers/2412.19437-DeepSeek-V3-Technical-Report.html",
     "raw/papers/2408.03314-Scaling-LLM-Test-Time-Compute-Optimally-can-be-More-Effectiv.pdf",
     "entities/clip.md",
-    "SCHEMA.md",
     "raw/papers/2407.21783-Llama-3-Herd-of-Models.md",
     "raw/articles/llm-agent-core-principles-2026.md",
     "raw/articles/designing-for-agents-2025.md",
     "raw/articles/claude-code-harness-architecture-2026.md",
-    "raw/articles/attention-algorithm-innovation-2025.md",
-    "raw/papers/2412.19437-DeepSeek-V3-Technical-Report.md",
-    "raw/papers/2210.02414-GLM-130B-An-Open-Bilingual-Pre-trained-Model.md",
-    "raw/papers/2209.07858-Red-Teaming-Language-Models-to-Reduce-Harms-Methods-Scaling.md",
-    "raw/papers/2205.14135-FlashAttention-1.md",
-    "raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement.md",
-    "raw/papers/1810.04805-BERT-Pre-training-Deep-Bidirectional-Transformers.md",
-    "raw/papers/1706.03762-Attention Is All You Need.md",
-    "concepts/context-engineering.md",
-    "concepts/mcp-model-context-protocol.md",
-    "raw/papers/1909.08593-Fine-Tuning-Language-Models-from-Human-Preferences.md",
-    "raw/papers/1908.10084-Sentence-BERT-Sentence-Embeddings-using-Siamese-BERT-Networks.md"
+    "raw/articles/attention-algorithm-innovation-2025.md"
   ]
 }
