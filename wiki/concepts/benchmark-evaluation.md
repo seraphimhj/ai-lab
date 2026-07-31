@@ -1,7 +1,7 @@
 ---
 title: 模型评估——benchmark 作为估计器与它的三种失效
 created: 2026-07-25
-updated: 2026-07-25
+updated: 2026-07-31
 type: concept
 tags: [benchmark, alignment, llm]
 sources: []
@@ -76,6 +76,18 @@ LLM-as-judge / RLAIF 第一次大规模让一个**会学习、有偏好、可被
 
 配套的是四层评测栈（互补而非替代）：训练内指标 → 固定离线集（便于比较、最易被适应性优化）→ 滚动隐藏集（查泛化与漂移）→ 线上 A/B 与人工审计（最贴近产品、最能发现自动 judge 漏了什么）。
 
+## 分数是排序还是概率：估计器之前先问「在估计什么量」
+
+前面把 benchmark 当成对风险 `R_online` 的有限样本估计器，但「估计器估的是哪种量」
+本身就分叉：同一批输出既能当**排序分数**、也能当**概率**、还能当**决策依据**，三者是
+互不蕴含的三道题。把分数做任意严格单调变换，排序（AUC）纹丝不动，概率含义却已改坏——
+所以「AUC/accuracy 高」不能替概率质量背书。要评概率就得用**适当评分规则**（NLL、Brier）：
+它们靠 excess risk 分解（log 的 `KL(q||p)`、Brier 的 `(p-q)^2`）让「诚实报告」成为唯一
+最优，同时把 MLE/NLL/交叉熵/KL 收进同一框架；而 ECE 的分箱一旦整体平均，又会掉进本页
+「聚合掩盖切片」的同一个坑（整体校准 ≠ 子群校准）。这条「分数语义」维度独立成页展开，
+见 [[probability-calibration]]。[[2026-07-30-calibration-vs-ranking]]
+[[2026-07-31-proper-scoring-rules-honest-probabilities]]
+
 ## 与端到端闭环的关系
 
 评测不是链尾的「客观旁观」：它一旦决定哪个模型上线，就成了控制回路的一部分——评测偏差 → 选错模型 → 改变线上输出 → 改变用户行为与日志 → 改变下一轮训练数据 → 偏差被写回模型。这正是「端到端闭环·偏差传导」的评测版本，误差通过决策反向注入数据环节，而非停在报表最后一栏。
@@ -87,6 +99,7 @@ LLM-as-judge / RLAIF 第一次大规模让一个**会学习、有偏好、可被
 - [[sparse-retrieval]] — 词表维 exact-match 保住少数信号
 - [[rlhf]] — RLAIF / reward model overoptimization 是 judge 进入闭环的训练侧
 - [[constitutional-ai]] — 从原则生成逐样本 AI 偏好的 RLAIF 范式
+- [[probability-calibration]] — 分数语义维：区分/校准/决策效用三分与 proper scoring rule，本页缺席的「分数是排序还是概率」
 - [[scaling-laws]] — 评测与 scaling 都要问「这个数在估计哪个分布上的什么量」
 
 ## 伴读来源

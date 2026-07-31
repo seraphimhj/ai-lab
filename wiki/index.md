@@ -102,6 +102,7 @@
 
 ### 模型评估
 - [[benchmark-evaluation]] — benchmark 作为估计器，contamination/Goodhart/drift 三失效 + LLM-as-judge 闭环 + 聚合掩盖切片
+- [[probability-calibration]] — 区分/校准/决策效用三分，proper scoring rule 让诚实报告最优，MLE/NLL/交叉熵/KL 同源
 
 ### 代码生成
 - [[code-generation]] — 代码模型（StarCoder/CodeLlama/DeepSeek-Coder），FIM + 仓库级上下文
