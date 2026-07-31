@@ -64,3 +64,21 @@
 
 ## 2026-07-25
 - 推送：「平均」如何在编码端和评测端抹掉决定性少数信号（命中：端到端闭环 + 模型评估 + RAG / Embedding；对应 `wiki/notes/2026-07-25-aggregation-erases-minority-signals.md`）
+
+## 2026-07-26
+- 推送：Self-RAG / CRAG——检索不再是一条管道，而是一个可纠错的动作（命中：RAG / 检索主线 + Agent / 上下文工程主线；对应 `wiki/notes/2026-07-26-self-rag-crag-agentic-retrieval.md`）
+
+## 2026-07-27
+- 推送：上下文工程如何拦住 Agent 的误差复合——compaction / 子代理隔离 / 按需检索 / 外部记忆（命中：端到端闭环·偏差传导 + Agent / 工具使用 / 上下文工程主线；对应 `wiki/notes/2026-07-27-context-engineering-error-firebreaks.md`）
+
+## 2026-07-28
+- 推送：Continuous Batching 如何把 GPU 从空转里救回来——从静态 batch 空泡到 iteration-level scheduling（命中：retrieval 以外·推理系统；对应 `wiki/notes/2026-07-28-continuous-batching-throughput.md`）
+
+## 2026-07-29
+- 推送：MoE——把参数量和每-token 计算量解耦，一次路由要还的两笔账（命中：retrieval 以外·预训练 + 推理系统；对应 `wiki/notes/2026-07-29-moe-capacity-compute-routing.md`）
+
+## 2026-07-30
+- 推送：模型会做对题，不等于它知道自己有多大把握——区分、校准与决策效用（命中：模型评估主线 + 统一数学框架；对应 `wiki/notes/2026-07-30-calibration-vs-ranking.md`）
+
+## 2026-07-31
+- 推送：谁能让模型诚实地报出概率？——Proper Scoring Rules、NLL 与 Brier 的统一框架（命中：统一数学框架 + 模型评估主线；对应 `wiki/notes/2026-07-31-proper-scoring-rules-honest-probabilities.md`）
