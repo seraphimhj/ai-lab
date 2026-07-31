@@ -41,7 +41,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
-wiki/.obsidian/workspace.json
+wiki/.obsidian/
 
 # ── Local env ───────────────────────────────────────────────
 .env
