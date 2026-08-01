@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-07-31
+> 最后更新：2026-08-01
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -30,8 +30,10 @@
   07-31 再补上闭环的目标环节——[[probability-calibration]] proper scoring rule 只保证 p 追向
   「被评分的标签分布」，标签有噪声/judge 有偏时「目标一旦错了，优化越成功越稳定地学错」，
   ECE 整体平均又与编码/评测端过早聚合同构）
-- **retrieval 以外的空缺**（最后确认：2026-07-24）：大模型预训练（数据配比、scaling、MoE 容量账）、
+- **retrieval 以外的空缺**（最后确认：2026-08-01）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
+  （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]] 概念页——N_total/N_active 解耦、两笔账、
+  router=内部参数检索器的 MoE↔RAG 同构、Chinchilla 四变量账本，新增链接支持该薄弱点仍活跃）
 
 ## hermes 每日推送规则
 
