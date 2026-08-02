@@ -1,7 +1,7 @@
 ---
 title: LLM 推理服务优化——显存/延迟/吞吐三本账
 created: 2026-07-24
-updated: 2026-07-24
+updated: 2026-08-02
 type: concept
 tags: [inference, optimization, infra, llm]
 sources: []
@@ -48,9 +48,28 @@ sources: []
 
 会更慢的场景：draft 与目标不一致（高温/跨语言/稀有标识符拉低 α）、draft 太贵、k 太大、高并发已填满 GPU（增每请求计算损总吞吐）。详见 [[2026-07-23-speculative-decoding-latency]]。
 
-## 吞吐账：continuous batching
+## 吞吐账：continuous / iteration-level batching
 
-生产 serving 的真问题是「一张卡同时服务几百条不等长请求怎么不空转」。static batching 要等整个 batch 里最慢的那条解码完，GPU 大量空泡；**continuous / iteration-level batching** 改成每条序列一解码到 EOS 就立刻退场、新请求即时补进 batch 维度，把利用率拉满。它和 PagedAttention 是一套：**前者填满 batch 维、后者填满显存维**。（本页此账待专题伴读笔记补全后回填细节。）
+生产 serving 的真问题是「一张卡同时服务几百条不等长请求怎么不空转」。**病灶不是 batch 太小，而是调度边界过粗**：static batching 把若干请求绑成不可变小队——一起进场、等最慢成员走完才集体散场。分类模型里每样本只做一次前向，绑不绑无所谓；生成模型是个循环（prefill→token 1→…→EOS），每条何时遇 EOS 事先不知，有人 20 token、有人 800。于是**最长序列劫持整个 batch 的资源释放**（head-of-line blocking 的 serving 版），短请求 EOS 后留下的槽位持续空转，排队新请求明明能用却被挡在 batch 边界外。
+
+**iteration-level scheduling（Orca, OSDI 2022）** 把调度粒度从「一条请求」下沉到「一次迭代」：每轮只让当前 batch 各走一步，一步之后交回控制权——检查谁 EOS 退场、谁能准入、显存是否够，再组下一轮。于是 batch 成员在生成途中就能换人，这就是 continuous / in-flight batching。名字的重点不在「GPU 永不停」而在 **admission（准入）连续发生**：新请求不必等一整批时代结束才进入执行集合。
+
+一笔「槽位-迭代」玩具账让浪费可见——batch 容 4 条，A/B/C/D 各还需 2/4/7/9 步：有效工作 `2+4+7+9=22`，static batch 必须跑到 D 的第 9 步、容量 `4×9=36`，利用率仅 `22/36≈61%`，那 14 个空槽不是「算了 padding」，而是**可服务等待请求却没被重分配的执行槽**——continuous batching 在 A 结束即让 E 进、B 结束即让 F 进，只要 waiting queue 不空且显存允许就维持接近满载。（注意 61% 只是揭示结构性浪费的玩具指标，非真实 utilization：prefill/decode 计算形态不同、序列长度改变 KV 访问成本、batch shape 改变 kernel 效率。）
+
+**它和 PagedAttention 正交、却不是同一个**：像酒店，continuous batching 管前台排房（客人退房能否立刻让排队客入住），PagedAttention 管房间切分与账册（是否必须整层预留、零散空房能否重组）。只有前者没有灵活 KV：想补新请求却因显存碎片/过度预留无法准入；只有后者没有前者：显存够却仍等最长请求清场。合成一句——**PagedAttention 让更多请求「住得下」，continuous batching 让住得下的请求「接得上」**；同 OS 的分页内存（状态放哪）+ 进程调度（下一时间片跑谁），只优化一个都饱和不了。据此有个诊断反射：**显存近满而 compute utilization 不高时别急着加显存**，先看活跃序列数、每轮 batched tokens、waiting/running 队列与 prefill/decode 比例——显存满只代表状态占满，不代表算力每轮在做高价值工作。
+
+**「有空位就补人」在真实系统里的四个约束**（防止误读成无代价开关）：① prefill（整 prompt 并行、计算量大）与 decode（每序列每轮推一 token、内存带宽受限）不是同一种工作，超长 prompt 的 prefill 会独占一轮、拖高在 decode 用户的 ITL，故有 **chunked prefill** 切块控制每轮 token budget；② 吞吐与延迟是多目标——攒更大 batch 提 tokens/s 却恶化 TTFT，优先 decode 顺滑流式却让新请求 prefill 饥饿，实为 `max tokens/s s.t. TTFT/ITL SLO、KV 容量、公平/优先级`；③「请求数」不是稳定的 batch 度量（一条 8K prefill 与一条单 token decode 都算 1 个 request 但成本天差），故调度上限同时看活跃序列数与本轮 batched tokens；④ 高负载下 KV 不够会**抢占**（暂停/重算/换回），决策点越频繁，公平性/优先级/重算成本越要显式设计。
+
+**三本账在此合流**——三者相乘才是端到端吞吐，各救一维、缺一不可：
+
+```text
+memory capacity  ×  iterations per request  ×  useful slots per iteration
+      ↑                    ↑                          ↑
+ PagedAttention     speculative decoding       continuous batching
+（同显存装多少活跃序列）（单序列走完几次前向）  （每轮 batch 槽位多少在干活）
+```
+
+**一处同构**：它和 Agent 上下文工程是同一个形状——finished request 占着 batch slot ↔ stale observation 占着 context window，iteration-level eviction ↔ compaction/子代理隔离，admit waiting request ↔ 只把 task-relevant 证据放进窗口。共同原则：容量有限时不只问「装多少」，还要问「何时释放、由谁补位」（呼应 [[context-engineering]] 的「写权限闸门」、[[react-agent]] 的记忆环）。详见 [[2026-07-28-continuous-batching-throughput]]。
 
 ## 判断框架
 
@@ -69,8 +88,11 @@ sources: []
 - [[model-quantization]] — 从「有效状态」一端减 KV/权重，另一条降本路径
 - [[mixture-of-experts]] — 参数量与每-token 计算量解耦，推理侧另一根账（routing/负载均衡）
 - [[scaling-laws]] — 训练侧的算力分配账，与推理侧成本账对照
+- [[context-engineering]] — 「容量有限时何时释放、由谁补位」在 Agent 上下文侧的同构问题（batch slot ↔ context window）
+- [[react-agent]] — 上同构的另一端：iteration-level eviction ↔ 记忆环 compaction
 
 ## 伴读来源
 
 - [[2026-07-14-kv-cache-paged-attention]] — 显存账：memory-bound、KV 显存核算、PagedAttention 分页解法
 - [[2026-07-23-speculative-decoding-latency]] — 延迟账：接受率、无损采样、Medusa、何时更慢
+- [[2026-07-28-continuous-batching-throughput]] — 吞吐账：iteration-level scheduling、槽位-迭代玩具账、与 PagedAttention 正交、prefill/decode 多目标约束、Agent 上下文同构
