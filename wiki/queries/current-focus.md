@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-08-02
+> 最后更新：2026-08-03
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -19,7 +19,7 @@
   （07-30/07-31 伴读 + 新建 [[probability-calibration]] 把 proper scoring rule 的
   excess risk=KL(q||p) 与 MLE/NLL/交叉熵首次系统同源，并把训练端 KL 锚[[dpo]]
   与评测端 KL 尺接成同一散度的两副面孔——新增链接支持该薄弱点仍活跃）
-- **端到端闭环**（最后确认：2026-07-31）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
+- **端到端闭环**（最后确认：2026-08-03）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
   这条链怎么连通、每一环的偏差如何传导（07-25 伴读把「过早聚合抹掉少数信号」在编码端与评测端打通、
   评测偏差经选模反向注入数据环——已聚成 [[benchmark-evaluation]]；07-26 把检索端也接上——
   SPLADE 词表维/[[colbert-retrieval|ColBERT]] MaxSim 是「拒绝过早聚合」在召回环的同构修法；
@@ -29,7 +29,9 @@
   是同一病灶在时间维/记忆环的第四处发作，分栏账本=拒绝过早聚合在 Agent 记忆上的同构修法；
   07-31 再补上闭环的目标环节——[[probability-calibration]] proper scoring rule 只保证 p 追向
   「被评分的标签分布」，标签有噪声/judge 有偏时「目标一旦错了，优化越成功越稳定地学错」，
-  ECE 整体平均又与编码/评测端过早聚合同构）
+  ECE 整体平均又与编码/评测端过早聚合同构；
+  08-03 反哺把 07-27 firebreak 伴读接进 [[context-engineering]]——四道保险丝按「切断哪类故障、错误能传多远」重排成故障域设计，
+  与分布式系统的 checkpoint/bulkhead/lazy-loading/durable-state 同构，把「偏差传导」从『误差从哪注入』翻到『误差传播半径与恢复路径』这根可靠性轴，新增链接支持该薄弱点仍活跃）
 - **retrieval 以外的空缺**（最后确认：2026-08-02）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、
