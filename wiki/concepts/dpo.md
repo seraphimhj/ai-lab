@@ -1,7 +1,7 @@
 ---
 title: DPO — Direct Preference Optimization
 created: 2026-05-10
-updated: 2026-08-04
+updated: 2026-08-05
 type: concept
 tags: [training, alignment, optimization]
 sources: []
@@ -59,10 +59,11 @@ L_DPO = -E[log σ(β log π_θ(y_w|x)/π_ref(y_w|x) - β log π_θ(y_l|x)/π_ref
 - 在线探索能力弱（不像 PLOA 或强化学习可以在线采样）
 - 长文本生成场景效果可能不如 RLHF
 
-## 换一根轴：KL 在 DPO 里是「锚」，和评测端那把「尺」是同一个散度
+## 换一根轴：KL 在 DPO 里是「锚」、评测端是「尺」、蒸馏端是「目标」——同一散度的三副面孔
 
-> 反哺自 07-31 伴读 [[2026-07-31-proper-scoring-rules-honest-probabilities]]：它把 log loss 的
-> 超额风险推成 KL(q‖p)，正好和 DPO 里的 KL 约束凑成同一个数学对象在闭环两端的两副面孔。
+> 反哺自 07-31 伴读 [[2026-07-31-proper-scoring-rules-honest-probabilities]]（它把 log loss 的
+> 超额风险推成 KL(q‖p)）与 07-13 伴读 [[2026-07-13-infonce-vs-kl]]（它把 InfoNCE/蒸馏都写成
+> softmax 交叉熵骨架下的 KL）：同一个数学对象在闭环三个工位上凑成三副面孔。
 
 上面「数学原理」把 KL 只当成 RLHF 目标里一句「同时满足 KL 约束」，容易读成一条可有可无的
 护栏。实际上 KL 是 DPO 闭式解**能成立的前提**，它并没有在 DPO 里消失，而是被折进了损失：
@@ -77,19 +78,28 @@ L_DPO = -E[log σ(β log π_θ(y_w|x)/π_ref(y_w|x) - β log π_θ(y_l|x)/π_ref
   锚绳 = 允许为迎合偏好大幅漂移，也更容易被噪声偏好（见「局限性」）带偏。DPO 的「过优化」表现为
   β 太小时策略钻偏好数据空子、离 π_ref 越来越远——这正是 KL 锚失效的样子。
 
-而真正值得记住的新洞见是**同一个 KL 在端到端闭环里换岗**：
+而真正值得记住的新洞见是**同一个 KL 在端到端闭环里换岗**。上面已看清训练端（锚）与评测端
+（尺）两副面孔，把闭环再往前推一格到训练信号的构造端，还有第三副：**蒸馏里的 KL 是「目标」**。
+当监督不是 one-hot 硬标签而是一个教师软分布 `t` 时，损失直接写成 `KL(t‖student)`——这里 KL 既
+不是被动约束、也不是事后度量，而是**被主动最小化的优化对象本身**（教师多说的「第二个其实也相关、
+第三个勉强相关」这层软结构，正是 InfoNCE 的单-正样本目标丢掉、而 KL 蒸馏补回的暗知识）。
+[[2026-07-13-infonce-vs-kl]] 里把 InfoNCE 写成「目标为 one-hot 的 KL」、把蒸馏写成「目标为软分布 t
+的 KL」，同一副 softmax 交叉熵骨架，只是目标分布从尖峰换成软峰。
 
 ```text
-KL(q‖p) 的两副面孔
-  训练端（DPO/RLHF）：KL 是「锚」——把策略拴在 π_ref 上，越小越保守（约束项，被动约束）
+KL(q‖p) 的三副面孔（沿数据→训练→评测闭环，从后往前排）
+  蒸馏/构造端（InfoNCE·KD）：KL 是「目标」——主动拉 student 贴向教师软分布 t（优化项，主动最小化）
+        └─ 见 [[2026-07-13-infonce-vs-kl]]：InfoNCE = 目标为 one-hot 的 KL，蒸馏 = 目标为软分布的 KL
+  训练/对齐端（DPO/RLHF）：KL 是「锚」——把策略拴在 π_ref 上，越小越保守（约束项，被动约束）
   评测端（proper score）：KL 是「尺」——log loss 相对诚实报告多付的超额风险（度量项，被动度量）
         └─ 见 [[probability-calibration]]：excess risk = KL(q‖p)，只有 p=q 时为 0
 ```
 
-一个当「约束」拴住优化、一个当「刻度」度量诚实，方向性（谁锚向谁）和角色都不同，却共享
-「分布失配要付代价」这同一副骨架。看清这点，就不必把 DPO 的 KL 约束、蒸馏里的 KL、评测里的 KL
-当成三件事分开背——它们是一个散度在闭环三个工位上的三种用法（这条线索另有一条交叉 pick 在
-`queries/picks.md` 待推）。
+三副面孔的差别全在**谁在动、谁不动、以及方向性**：蒸馏里 student 主动追教师（p 追向 t）、DPO 里
+策略被 π_ref 拴住（p 被 π_ref 约束）、评测里 p 与 q 都固定只做一次度量。角色（目标/约束/刻度）
+和方向都不同，却共享「分布失配要付代价」这同一副骨架。看清这点，就不必把蒸馏里的 KL、DPO 的
+KL 约束、评测里的 KL 当三件事分开背——它们是一个散度在闭环三个工位上的三种用法（这条线索另有
+一条交叉 pick 在 `queries/picks.md` 待推）。
 
 ## 相关概念
 
@@ -98,3 +108,4 @@ KL(q‖p) 的两副面孔
 - [[instruction-tuning]] — 偏好学习的基础
 - [[probability-calibration]] — 评测端的 KL：同一散度当「尺」而非「锚」
 - [[2026-07-31-proper-scoring-rules-honest-probabilities]] — 反哺来源（proper score 的 excess risk=KL）
+- [[2026-07-13-infonce-vs-kl]] — 蒸馏/构造端的 KL：同一散度当「目标」（InfoNCE=one-hot KL、蒸馏=软分布 KL），补齐三副面孔
