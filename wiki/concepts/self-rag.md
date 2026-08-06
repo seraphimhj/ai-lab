@@ -1,7 +1,7 @@
 ---
 title: Self-RAG — 自我反思检索增强生成
 created: 2026-05-10
-updated: 2026-05-14
+updated: 2026-08-06
 type: concept
 tags: [retrieval, generation, agent]
 sources: [raw/papers/2310.11511-Self-RAG-Learning-to-Retrieve-Generate-and-Critique-through-Self-Reflection.html, raw/papers/2401.15884-Corrective-Retrieval-Augmented-Generation.html]
@@ -80,10 +80,52 @@ CRAG（Corrective Retrieval Augmented Generation）[[raw/papers/2401.15884-Corre
 - Plug-and-play，可与各种 RAG 方法无缝结合
 - 在短文本和长文本生成任务上均有显著提升
 
+## 换一根轴：不是「多一个评分器」，而是把检索改成可决策的动作（07-26 伴读反哺）
+
+上面按「反思标记 / 三态触发」把 Self-RAG、CRAG 讲成两套改鲁棒性的机制清单。[[2026-07-26-self-rag-crag-agentic-retrieval]] 伴读换了一根更本质的轴：**真正变的不是多挂了一个打分器，而是控制流**——检索从一次性的生成前预处理，变成可以跳过、重做、降权、验证的动作。分水岭因此不在「有没有评分」，而在**评价结果会不会改变下一步动作**：只让模型多写一段「自我反思」而控制流照旧，不算纠错，只是把黑箱又叠了一层。
+
+### 病灶重述：召回是候选生成，不是事实认证
+
+标准 RAG 把 retriever 当「事实供应器」，但它只回答了一件事：*哪些文本在表示空间里最像这个 query*。它没承诺文档真的支持模型即将写出的那句话。于是要把两个此前容易混用的指标拆开：
+
+```text
+retrieval relevance:  文档和问题相关吗?     ← SPLADE/ColBERT/MUVERA 优化的是这个
+claim support:        文档能推出这句回答吗?  ← 召回率再高也不保证
+```
+
+一篇乔布斯传记与「乔布斯哪年出生」高度相关，但若截取段落里没有出生年份，它对该 claim 就是「相关但不支持」。**检索错误不是普通噪声——一旦进入上下文，它会获得证据的外观**，把模型原本的「不知道」升级成「拿着错证据自信地说」。Recall@k 治的是候选缺失，治不了证据误用。
+
+### 核心新洞见：Self-RAG 与 CRAG 是两处不同的保险丝，不是替代关系
+
+按「拦哪一类故障、故障在链条哪一环」重排，两者覆盖的是不同故障面：
+
+```text
+query → retriever
+          │
+          ├─ CRAG evaluator ──── 拦「坏证据进入上下文」（生成前、外置质检站）
+          │
+        generator
+          │
+          └─ Self-RAG ISSUP ──── 拦「答案越过证据边界」（生成中、内生控制变量）
+          │
+        answer
+```
+
+这正是 [[2026-07-27-context-engineering-error-firebreaks|故障域设计]]那根轴在检索环的复现：可靠性不来自组件不犯错，而来自**在误差跨环传播之前放保险丝**——直接接住 [[react-agent]] 的 07-20 误差复合诊断（单步误差独立、闭环误差复合），把「误差从哪注入」翻到「在哪一环拦下、拦的是哪一类」。CRAG 的 evaluator 与 reranker 也不同：reranker 在候选池内问「谁更好」，evaluator 问「这批还能不能用」——Incorrect 分支允许承认候选池整体失效、换知识源，这是从 ranking 到 control 的一步。
+
+### 四类判断为什么不能压成一个 confidence
+
+Retrieve / ISREL / ISSUP / ISUSE 各问不同的事、各对应不同的补救动作（跳过检索 / 换文档 / 补证据改写 claim / 重组答案）。把它们加权求和成一个总分，就会丢掉故障位置——「文档相关=是、事实支持=是、回答有用=否」（只讲了正确的原理史却没回答「怎么修」）这种组合会被一个平均分抹平。这与 [[2026-07-25-aggregation-erases-minority-signals|过早聚合抹掉少数信号]]同构：**别只报一个总分，用评分维度定位错误发生在哪一环**。CRAG 的 Ambiguous 三态同理——不把中间分硬切成对/错，让「不确定」拥有一种不能被忽略的表示（≈ 类型系统里的 `Option`/`Result`，不允许不确定悄悄伪装成确定值）。
+
+### 一句话把定义抬一层
+
+Agentic RAG 的本质不是「多调几次搜索」，而是**让检索质量影响控制流**——检索被降格为一个带质检与回退路径的可决策动作，评分只有真正改变后续动作时才有价值。
+
 ## 相关概念
 
 - [[retrieval-augmented-generation]] — Self-RAG 的基础框架
-- [[react-agent]] — 类似的反思循环思想
+- [[react-agent]] — 类似的反思循环思想；07-20 误差复合是本页「保险丝」框架的上游诊断
+- [[context-engineering]] — 故障域设计/错误保险丝那根轴，Self-RAG/CRAG 是它在检索环的两处落点
 - [[graph-rag]] — 另一种 RAG 改进方向
 - [[dense-passage-retrieval]] — Self-RAG 中使用的检索方法
 - [[colbert-retrieval]] — 可作为 Self-RAG 检索器的替代方案
