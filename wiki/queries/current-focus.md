@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-08-06
+> 最后更新：2026-08-07
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -39,13 +39,16 @@
   与分布式系统的 checkpoint/bulkhead/lazy-loading/durable-state 同构，把「偏差传导」从『误差从哪注入』翻到『误差传播半径与恢复路径』这根可靠性轴；
   08-06 反哺再把这根「故障域/保险丝」轴接进检索环——[[self-rag]] 从「机制清单」抬成 Self-RAG ISSUP 与 CRAG evaluator 两处不同保险丝
   （拦『答案越过证据边界』vs 拦『坏证据进上下文』），接住 07-20 误差复合、与 07-27 故障域设计同构，四类反思判断不可压成一个 confidence＝07-25 拒绝过早聚合在检索控制流的复现，新增链接支持该薄弱点仍活跃）
-- **retrieval 以外的空缺**（最后确认：2026-08-02）：大模型预训练（数据配比、scaling、MoE 容量账）、
+- **retrieval 以外的空缺**（最后确认：2026-08-07）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、
   router=内部参数检索器的 MoE↔RAG 同构、Chinchilla 四变量账本；
   08-02 反哺把 07-28 continuous batching 伴读回填进 [[llm-inference-serving]] 的「吞吐账」占位——
   iteration-level scheduling/槽位-迭代账/与 PagedAttention 正交/三本账相乘，
-  推理系统三本账（显存·延迟·吞吐）至此在概念层补齐，新增链接支持该薄弱点仍活跃）
+  推理系统三本账（显存·延迟·吞吐）至此在概念层补齐；
+  08-07 反哺再把预训练侧补上一处——把 07-16 Chinchilla 伴读接进 [[scaling-laws]]（该页此前把「20:1」写成事实、无任何伴读反链），
+  抬成「约束优化+边际收益相等」骨架，D≈有效信息代理量与 RAG 的 k≈有效证据同构、三种「最优」分层、诊断表落地，
+  为待推的【预训练数据配比】pick 垫好 D 轴概念层，新增链接支持该薄弱点仍活跃）
 
 ## hermes 每日推送规则
 
