@@ -1,7 +1,7 @@
 ---
 title: Sparse Retrieval
 created: 2026-05-14
-updated: 2026-07-26
+updated: 2026-08-08
 type: concept
 tags: [retrieval, embedding, nlp, rag]
 sources: [raw/papers/2109.10086-SPLADE-v2-Sparse-Lexical-and-Expansion-Model-for-Information-Retrieval.html]
@@ -69,6 +69,25 @@ SPLADE（SParse Lexical AnD Expansion model）用 [[bert]] 的 MLM head 为文�
 
 这条"哪一步聚合、就决定哪种信号被抹掉"的轴，把稀疏检索、[[colbert-retrieval]] 的 MaxSim（逐 token 独立验收）与评测端的 worst-group / slice 指标串成同一病灶（[[benchmark-evaluation]]）的三处同构修法：编码/检索端保留局部维度、评测端保留数据切片，最后都按真实业务风险而非样本频率再聚合。
 
+## 稀疏检索是「实体 mismatch 三处修法」里的第一处
+
+上一节从「过早聚合」解释了稀疏检索为何在实体上占优；换到「补哪一环」这根轴，稀疏 exact-match 是补回实体信号的**三处协同修法中的第一处——补在词表层**（[[2026-07-22-embedding-entity-mismatch]] 把这套修法拆全）：
+
+| 修法 | 补在链条哪一环 | 机制 | 页面 |
+|------|--------------|------|------|
+| **稀疏 exact-match（本页 SPLADE/BM25）** | **词表层（召回前）** | 专名落在自己的一维、字面命中当身份锚，混合检索里给 dense 兜底 | 本页 |
+| late interaction MaxSim | 检索时匹配层 | 保留每 token 向量、逐 token 验收，实体 token 不被 pooling 抹掉 | [[colbert-retrieval]] |
+| entity-aware 难负例 | 训练目标层 | 「只换实体」的难负例逼模型学到「换个实体即负样本」，改写相似性边界 | [[text-embedding]] |
+
+三处各补一环、互不替代：训练侧难负例改的是 dense 自身的相似性边界（治本但吃数据与算力），词表层与检索时两处是「不改 dense、外挂一个对实体更硬的通道」（治标但即插即用）。生产 RAG 常把词表层这一处与 dense 做混合检索（RRF/加权），正是让稀疏分支当**身份锚**、dense 分支当**语义召回**。
+
+**为什么稀疏分支能当身份锚，根子在一处「训练目标 vs 使用目标」的错位**：dense embedding 通常被对比学习训练去逼近 **semantic similarity**（两段话在不在谈相近的事），却被系统当 **retrieval relevance**（这段话答不答得了这个具体查询）来用——两个目标恰在实体敏感的查询上分道扬镳，于是"营收下降"的话题相似度盖过"哪家公司"的身份差异。这本质是一次**训练分布与使用分布的错位**（呼应 [[benchmark-evaluation]]「你的目标是从哪个分布定义的」）。稀疏 exact-match 没有这道错位：BM25 的词频统计压根不学「语义相似」这个会漂移的目标、SPLADE 的命中也锚在词表面形上，实体的字面在不在文档里是个可验证的硬事实、不靠一个可能训偏的语义方向来代理——这才是它对 dense「治本前先兜底」的结构性理由，而非简单的"匹配更准"。
+
 ## 与 [[text-embedding]] 的关系
 
 现代 embedding 模型如 BGE-M3 已内置多路检索能力：Dense + Sparse + ColBERT 三合一，模糊了稀疏/密集的边界。Qwen3-Embedding 同样支持稀疏向量输出。
+
+## 伴读来源
+
+- [[2026-07-22-embedding-entity-mismatch]] — 实体 mismatch 三处修法（词表层 exact-match / late interaction / entity-aware 难负例）、semantic-similarity 与 retrieval-relevance 的训练-使用目标错位
+- [[2026-07-25-aggregation-erases-minority-signals]] — 「过早聚合抹掉少数信号」这根轴，稀疏词表维=给否决型信号留独立账目
