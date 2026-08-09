@@ -1,7 +1,7 @@
 ---
 title: Sparse Retrieval
 created: 2026-05-14
-updated: 2026-08-08
+updated: 2026-08-09
 type: concept
 tags: [retrieval, embedding, nlp, rag]
 sources: [raw/papers/2109.10086-SPLADE-v2-Sparse-Lexical-and-Expansion-Model-for-Information-Retrieval.html]
@@ -37,6 +37,39 @@ SPLADE（SParse Lexical AnD Expansion model）用 [[bert]] 的 MLM head 为文�
 - **蒸馏训练**：从 Cross-Encoder 教师模型学习
 - **正则化**：FLOPS 正则化控制稀疏度，平衡效果与效率
 - **效果**：在 MS MARCO 上超越 BM25 ~10 个点，接近 [[dense-passage-retrieval]] 水平
+
+## SPLADE 的打分机制：一个词项权重的完整来历
+
+上面说 SPLADE「用 MLM head 为每个 token 生成词表权重」，但真正的打分对象不是输入 token，而是**「位置 j × 词表项 i」这对关系** [[2026-07-15-splade-learned-sparse-retrieval]]：MLM head 对每个输入位置 j 都吐一整排约 30K 维 logit `s_ij`（位置 j 的上下文状态与词表向量 e_i 做点积的匹配分），一段长 L 的文本先得到一个 `L×|V|` 张量，再沿位置聚合成 `|V|` 维文本向量 [[2026-07-19-splade-mlm-head-term-scoring]]：
+
+```text
+w_i = max_j  log(1 + ReLU(s_ij))
+```
+
+三个算子各管一件事、缺一不可：
+- **ReLU**：把负 logit 精确砍成 0，既是稀疏门、又保证权重非负（稀疏点积里共享词只加分，不会「两个负数相乘反而加分」）；
+- **log(1+x)**：单调压缩正激活，边际增益递减（0→1 重要、20→21 微不足道），防少数超大 logit 垄断点积；
+- **跨位置 max**：同一词项可能被多处点亮，只留最强证据——`w_i` 非零意味着「整段中至少一处强烈支持词项 i」，梯度也主要经获胜位置 `argmax_j` 回传，学习信号比 sum pooling 更集中。
+
+**扩展（expansion）不由这三闸创造**：文档没出现 `myocardial` 却能得分，是因为 `heart attack` 的上下文让某位置表示落到接近 `myocardial` 词表向量的方向——扩展早在 `s_ij` 的词表投影里就发生了，三闸只决定哪些联想活下来、活下来权重多大。
+
+### 关键边界：SPLADE 权重不是概率
+
+标准 MLM 对同一位置的整张词表做 softmax，强迫所有词竞争总和为 1 的概率质量；SPLADE 在表示层直接对 `log(1+ReLU(s_ij))` 取值，**没有 softmax**，各维不必求和为 1，一篇心梗文档可以同时强烈点亮 heart / attack / myocardial / treatment。所以 `w_i` 不是「词 i 出现的概率」、不是「遮住位置 j 后的校准概率」，而是检索训练后的**词项重要性权重（term importance weight）**——形状更接近多标签分类而非完形填空。把 SPLADE 权重当置信度来读，是最常见的误用。
+
+### 稀疏从哪来：FLOPS 正则在改 logit 的符号
+
+ReLU 只能把「已经是负」的 logit 置零；真正把大量维度推过 0 的是训练里的稀疏正则。SPLADE 在排序损失外加 FLOPS 正则（batch 内每词项平均激活的平方和），尤其惩罚「热门词到处亮」（posting list 太长、检索时扫描贵）：
+
+```text
+L = L_rank + λ_q·L_FLOPS(query) + λ_d·L_FLOPS(document)
+```
+
+于是训练是拉锯——排序损失想多点亮词以提高 query/doc 重叠，FLOPS 正则把无用的 `s_ij` 推成负数、越过 0 后被 ReLU 精确置零、倒排索引彻底不存它。**稀疏度是「排序有用性 × 线上 posting 成本」两股力平衡出来的，不是 log 压出来的**（log(1+x) 对任何正数仍为正，只压幅度不造零；精确的零来自 ReLU 与稀疏正则）。
+
+### 又一处「训练代理 vs 真实使用」错位
+
+FLOPS 正则把「少扫 posting list」写进训练，但线上真正决定延迟的是硬件、压缩格式、缓存命中与 P99——**训练代理目标（低 FLOPS）与真实执行成本（低延迟）并不恒等**。这正是本页下一节那处「semantic-similarity 训练目标 vs retrieval-relevance 使用目标」错位在**效率轴**上的孪生：一处落在相关性轴（dense 按语义相似训练、当检索相关用，于是认错实体），一处落在效率轴（按 FLOPS 训练、当真实延迟用，于是可能「FLOPS 看着低、检索却不快」，形同 reward hacking）。两者共享同一副骨架——**一旦用代理目标训练，就得防它和真实目标分道扬镳**，与 [[benchmark-evaluation]]「你的目标是从哪个分布定义的」同源。这也把稀疏检索的效率账，从「怎么调稀疏度」抬成「训练分布↔使用分布是否对齐」的可靠性问题。
 
 ## 稀疏 vs 密集检索
 
@@ -89,5 +122,7 @@ SPLADE（SParse Lexical AnD Expansion model）用 [[bert]] 的 MLM head 为文�
 
 ## 伴读来源
 
+- [[2026-07-15-splade-learned-sparse-retrieval]] — SPLADE 把语义投回 30K 维词表、继续用倒排索引检索（「表示放哪、用谁检索」这根分界轴）
+- [[2026-07-19-splade-mlm-head-term-scoring]] — 一个词项权重的完整来历：`w_i=max_j log(1+ReLU(s_ij))` 三闸、为什么不是概率、FLOPS 正则如何造稀疏、FLOPS 代理↔真实延迟错位
 - [[2026-07-22-embedding-entity-mismatch]] — 实体 mismatch 三处修法（词表层 exact-match / late interaction / entity-aware 难负例）、semantic-similarity 与 retrieval-relevance 的训练-使用目标错位
 - [[2026-07-25-aggregation-erases-minority-signals]] — 「过早聚合抹掉少数信号」这根轴，稀疏词表维=给否决型信号留独立账目

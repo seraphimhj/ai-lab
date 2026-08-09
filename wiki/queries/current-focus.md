@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-08-08
+> 最后更新：2026-08-09
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -24,7 +24,7 @@
   接进 [[dpo]]，KL 在蒸馏/构造端当「目标」（InfoNCE=one-hot KL、蒸馏=软分布 KL，主动最小化），
   与「锚」「尺」凑成同一散度沿闭环三工位的三副面孔，直接为待推的【交叉·KL 三副面孔】pick
   垫好概念层，新增链接支持该薄弱点仍活跃）
-- **端到端闭环**（最后确认：2026-08-08）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
+- **端到端闭环**（最后确认：2026-08-09）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
   这条链怎么连通、每一环的偏差如何传导（07-25 伴读把「过早聚合抹掉少数信号」在编码端与评测端打通、
   评测偏差经选模反向注入数据环——已聚成 [[benchmark-evaluation]]；07-26 把检索端也接上——
   SPLADE 词表维/[[colbert-retrieval|ColBERT]] MaxSim 是「拒绝过早聚合」在召回环的同构修法；
@@ -41,7 +41,9 @@
   （拦『答案越过证据边界』vs 拦『坏证据进上下文』），接住 07-20 误差复合、与 07-27 故障域设计同构，四类反思判断不可压成一个 confidence＝07-25 拒绝过早聚合在检索控制流的复现；
   08-08 反哺再把「偏差从哪注入」补上编码环最上游的一处——[[sparse-retrieval]] 首链 [[2026-07-22-embedding-entity-mismatch]]，
   点明 dense embedding「按 semantic-similarity 训练、当 retrieval-relevance 用」是一次训练分布↔使用分布错位，实体 mismatch=该错位在实体敏感查询上的发作，
-  稀疏 exact-match 因无此学习目标错位而能当身份锚兜底（＝三处修法的词表层第一处），新增链接支持该薄弱点仍活跃）
+  稀疏 exact-match 因无此学习目标错位而能当身份锚兜底（＝三处修法的词表层第一处）；
+  08-09 反哺再把同一根「训练分布↔使用分布错位」轴推进一层——[[sparse-retrieval]] 首链 [[2026-07-19-splade-mlm-head-term-scoring]]/[[2026-07-15-splade-learned-sparse-retrieval]]，
+  拆开 SPLADE 打分链（w_i=max_j log(1+ReLU(s_ij)) 三闸、权重非概率、FLOPS 正则造稀疏），并点出效率轴上的孪生错位——FLOPS 训练代理≠真实 P99 延迟，与相关性轴的 semantic-similarity↔retrieval-relevance 错位同骨架（皆 reward-hacking 形），新增链接支持该薄弱点仍活跃）
 - **retrieval 以外的空缺**（最后确认：2026-08-07）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、
