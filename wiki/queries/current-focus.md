@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-08-09
+> 最后更新：2026-08-10
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -44,7 +44,7 @@
   稀疏 exact-match 因无此学习目标错位而能当身份锚兜底（＝三处修法的词表层第一处）；
   08-09 反哺再把同一根「训练分布↔使用分布错位」轴推进一层——[[sparse-retrieval]] 首链 [[2026-07-19-splade-mlm-head-term-scoring]]/[[2026-07-15-splade-learned-sparse-retrieval]]，
   拆开 SPLADE 打分链（w_i=max_j log(1+ReLU(s_ij)) 三闸、权重非概率、FLOPS 正则造稀疏），并点出效率轴上的孪生错位——FLOPS 训练代理≠真实 P99 延迟，与相关性轴的 semantic-similarity↔retrieval-relevance 错位同骨架（皆 reward-hacking 形），新增链接支持该薄弱点仍活跃）
-- **retrieval 以外的空缺**（最后确认：2026-08-07）：大模型预训练（数据配比、scaling、MoE 容量账）、
+- **retrieval 以外的空缺**（最后确认：2026-08-10）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、
   router=内部参数检索器的 MoE↔RAG 同构、Chinchilla 四变量账本；
@@ -53,7 +53,11 @@
   推理系统三本账（显存·延迟·吞吐）至此在概念层补齐；
   08-07 反哺再把预训练侧补上一处——把 07-16 Chinchilla 伴读接进 [[scaling-laws]]（该页此前把「20:1」写成事实、无任何伴读反链），
   抬成「约束优化+边际收益相等」骨架，D≈有效信息代理量与 RAG 的 k≈有效证据同构、三种「最优」分层、诊断表落地，
-  为待推的【预训练数据配比】pick 垫好 D 轴概念层，新增链接支持该薄弱点仍活跃）
+  为待推的【预训练数据配比】pick 垫好 D 轴概念层；
+  08-10 反哺再把后训练·对齐方法演进补上一处——把 07-18 DPO/KTO/GRPO 家谱伴读接进 [[rlhf]]（该页自 05-14 零更新、无任何伴读反链），
+  抬成「共同祖先=奖励减漂移、DPO/KTO/GRPO 在 reward 来源/KL 锚/数据何时产生 三根正交轴上各挪位」的家谱骨架，
+  点明 DPO/KTO 改「反馈→损失」接口、GRPO 改「在线 RL 优势估计（组内基线替 critic）」是正交两步、选型首选数据闭环而非损失函数，
+  并把终局问题（reward/policy/judge 共漂、KL 只锚一条边）交叉链到 [[benchmark-evaluation]]，新增链接支持该薄弱点仍活跃）
 
 ## hermes 每日推送规则
 
