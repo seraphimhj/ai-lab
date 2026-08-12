@@ -1,7 +1,7 @@
 ---
 title: 模型评估——benchmark 作为估计器与它的三种失效
 created: 2026-07-25
-updated: 2026-07-31
+updated: 2026-08-12
 type: concept
 tags: [benchmark, alignment, llm]
 sources: []
@@ -59,6 +59,22 @@ LLM-as-judge / RLAIF 第一次大规模让一个**会学习、有偏好、可被
 
 对策不是退回全人工，而是把评委关进约束：能执行验证的别用 LLM 猜（代码跑测试、数学做校验、检索核对引用）；rubric 拆成可观测维度不让文风补偿事实错误；反事实扰动（换 A/B 顺序、压篇幅、隐身份）测评委是否看错东西；保留异质锚点让误差来源不相关；judge 当模型版本管理（换 judge = 换量尺，趋势线不能未经桥接直接续）；留一块优化看不见的审计集。
 
+## Goodhart 不是评测专属：整条闭环都在优化「可测代理」
+
+把上面三种失效里的 Goodhart 抽象一层，它其实不是评测独有的病，而是**闭环每一站都在犯的同一个结构错误**：真正的目标 `T` 昂贵或不可直接观测，于是各站都改优化一个便宜、可测的代理 `S`；只要施加足够优化压力，`S` 会一路升、`T` 却停滞甚至反转（proxy↑ / gold↓）。同一副骨架在闭环四个位置换了四身衣服：
+
+```text
+站位          真目标 T              被优化的代理 S         错位 / reward-hacking 形
+数据·预训练    下游能力              固定语料上的 loss       语料污染让 loss 降却非泛化（20:1 是经验工作点非常数）
+训练·后训练    人类真实偏好          learned reward model    proxy reward↑ / gold reward↓ ＝ reward overoptimization
+训练·检索      检索相关性、真实延迟   语义相似度、FLOPS       semantic-similarity↔retrieval-relevance、FLOPS↔P99 双重错位
+评测          线上风险 R_online     离线榜单 R_hat_eval     Goodhart / contamination / drift（本页三失效）
+```
+
+对应概念页各自把这一站拆开了：数据·预训练见 [[scaling-laws]]、后训练见 [[rlhf]]（家谱见 [[2026-07-18-dpo-kto-grpo-family]]）、检索见 [[sparse-retrieval]]（打分链的 FLOPS 代理错位见 [[2026-07-19-splade-mlm-head-term-scoring]]）。于是「评测端的 Goodhart」只是这台机器在**最后一站**的读数——它之所以最危险，是因为评测决定谁上线，等于把前几站的代理错位**聚合成一个决策**再写回数据环（见下文「与端到端闭环的关系」）。
+
+也因此**防御手段在四站同构**：都不是「换一个更聪明的代理」，而是**周期性回锚真目标 T**——隐藏 holdout / gold reward 复核 / 真实 P99 压测 / 下游任务离线集，各自是同一句「别让 S 独自当家」在本站的落法。判断一个指标健不健康，就问一句：它是 `T` 本身，还是一个在足够压力下会与 `T` 分道扬镳的 `S`？
+
 ## 一张「评测身份证」
 
 看任何榜单，先别看第一名，先找这几行小字——它们比总分更接近真相：
@@ -107,3 +123,5 @@ LLM-as-judge / RLAIF 第一次大规模让一个**会学习、有偏好、可被
 - [[2026-07-17-benchmark-failure-distribution]] — benchmark 作为估计器、contamination/Goodhart/drift 三支柱、四层评测栈
 - [[2026-07-21-path-and-compass]] — 路径可学、指南针必须外置；LLM-as-judge 把评测升级为闭环控制、共盲/迎合/自证
 - [[2026-07-25-aggregation-erases-minority-signals]] — 聚合抹平少数信号在编码端与评测端同构、可聚合性四问
+- [[2026-07-18-dpo-kto-grpo-family]] — 训练站的代理错位：learned reward model 被优化到 proxy↑/gold↓（reward overoptimization），Goodhart 的后训练版本
+- [[2026-07-19-splade-mlm-head-term-scoring]] — 检索站的代理错位：FLOPS 训练代理≠真实 P99 延迟，Goodhart 在效率轴的孪生
