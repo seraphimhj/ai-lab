@@ -1,7 +1,7 @@
 ---
 title: RLHF — 基于人类反馈的强化学习
 created: 2026-05-10
-updated: 2026-08-10
+updated: 2026-08-13
 type: concept
 tags: [training, alignment, reinforcement-learning]
 sources: [raw/papers/1909.08593-Fine-Tuning-Language-Models-from-Human-Preferences.html, raw/papers/2009.01325-Learning-to-summarize-from-human-feedback.html, raw/papers/2203.02155-Training-language-models-to-follow-instructions-with-human-f.html, raw/papers/2204.05862-Training-a-Helpful-and-Harmless-Assistant-with-Reinforcement.html]
@@ -112,10 +112,40 @@ model / 验证器 / LLM-judge 本身也随训练迭代时，π_ref 还是够稳�
 评测者三者共漂、而现有 KL 只约束了其中一条边的系统？可验证奖励（RLVR）为何能退回「几乎不让权」，
 另有一条 pick 在 `queries/picks.md` 待推。
 
+## 奖励模型也是一台概率报告器：Bradley-Terry 的「诚实」诚实拟合的是谁
+
+> 反哺自 07-31 伴读 [[2026-07-31-proper-scoring-rules-honest-probabilities]]。把上面「局限性」里
+> 那条孤零零的**奖励黑客**接到一个更硬的机制上——它不是 RM 训坏的意外，而是 RM 训得**太诚实**的必然。
+
+阶段二那条 Bradley-Terry 损失 `L=-log σ(r(x,y_w)−r(x,y_l))` 本质上是一条**适当评分规则**
+（proper scoring rule）：把「这一对里 w 是否胜出」当成二分类，σ(Δr) 就是 RM 报告的偏好概率，
+这条 NLL 与 [[probability-calibration]] 里的 log loss 同形，同一套「如实报告 `p=q` 才是唯一期望
+最优」的激励结构在逼 RM 诚实地报出它相信的偏好概率。到这一层，RM 是一台被 proper scoring 校准
+过、越练越诚实的概率报告器。
+
+危险恰恰在「诚实」二字的对象上。properness 只保证 `p` 追向**被评分的标签分布**——这里就是
+**标注者群体的偏好分布**，而不是「什么才是更好的回答」这个业务真相：
+
+```text
+Bradley-Terry / log loss  proper
+      +--> RM 的偏好概率诚实追向「标注者爱选哪个」
+      -X-> 标注者爱选的 = 真正更好的（长度/格式/位置/谄媚偏置全在污染这个 q）
+```
+
+于是「奖励黑客」换一个说法就散了它的偶然性：**RM 越是一台校准良好的概率报告器，它越忠实地把
+「标注者爱看什么」而非「什么是对的」编码进奖励**，policy 再把这些系统性偏置当作真目标去最大化。
+阶段三那个 KL 锚只拦得住**策略漂移**（别离 π_ref 太远），拦不住这层更深的「诚实地测量了错的
+对象」——它约束的是 π 到 π_ref 的距离，不是 r 到真相的距离。这正是 [[probability-calibration]]
+的终局问题落在对齐上的形状：当「真相」本身由反馈过程生成，properness 到底该相对于谁来定义？
+可验证奖励（RLVR）之所以能抗 reward hacking，正是把 `q` 从「标注者偏好」换成「验证器判定的
+0/1」这个不被口味污染的分布（另有 pick 待推）。
+
 ## 相关概念
 
 - [[dpo]] — 家谱里「离线·成对偏好」这一支：把 RM+PPO 折叠成一次二分类
+- [[probability-calibration]] — RM 的 Bradley-Terry 是一条 proper scoring rule；奖励黑客=它诚实拟合了标注者偏好分布而非真相
 - [[constitutional-ai]] — 用 AI 反馈替代部分人类反馈
 - [[instruction-tuning]] — RLHF 的前置步骤 SFT
 - [[benchmark-evaluation]] — 家谱的终局问题落点：reward/policy/judge 共漂时 KL 只锚住一条边
 - [[2026-07-18-dpo-kto-grpo-family]] — 反哺来源（三轴家谱：reward 从哪来 / KL 锚在哪 / 数据何时产生）
+- [[2026-07-31-proper-scoring-rules-honest-probabilities]] — 反哺来源（Bradley-Terry=proper scoring rule，奖励黑客=RM 诚实拟合标注者偏好分布而非真相）
