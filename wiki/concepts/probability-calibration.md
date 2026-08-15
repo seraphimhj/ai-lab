@@ -1,7 +1,7 @@
 ---
 title: 概率评测——区分 / 校准 / 决策效用与适当评分规则
 created: 2026-07-31
-updated: 2026-07-31
+updated: 2026-08-15
 type: concept
 tags: [benchmark, alignment, llm]
 sources: []
@@ -80,8 +80,22 @@ log loss 的期望分解直接暴露出「统一数学框架」薄弱点要的�
 - properness 问：这套代价是否让说真话成为最优？
 
 它们不是五件工具，而是同一对象在不同问题下的名字。这条链把 [[dpo]] / [[rlhf]] 里
-「KL 锚」与评测端「excess risk = KL」接成同一个 KL——训练时把 KL 当**正则锚**、
-评测时把 KL 当**诚实度量尺**，只是同一散度在闭环不同环节的两副面孔。
+「KL 锚」与评测端「excess risk = KL」接成同一个 KL——但沿闭环数一圈，其实有三处工位
+在使唤同一个 `KL(q‖p)`，角色与方向各不同：
+
+```text
+KL(q‖p) 的三副面孔（沿数据→训练→评测闭环，从后往前排）
+  蒸馏/构造端（InfoNCE·KD）：KL 是「目标」——主动把 student 拉向教师软分布 t（优化项，主动最小化）
+  训练/对齐端（DPO/RLHF）：KL 是「锚」——把策略拴在 π_ref 上，越小越保守（约束项，被动约束）
+  评测端（proper score）：KL 是「尺」——log loss 相对诚实报告多付的超额风险（度量项，被动度量）
+```
+
+差别全在**谁在动、谁不动、方向性**：蒸馏里 `p` 主动追 `t`、DPO 里 `p` 被 `π_ref` 拴住、
+评测里 `p` 与 `q` 都固定只做一次度量。本页 log loss 的 excess risk = KL 只是这三副面孔里的
+「尺」；[[2026-07-13-infonce-vs-kl]] 把 InfoNCE 写成「目标为 one-hot 的 KL」、蒸馏写成
+「目标为软分布 t 的 KL」，补上「目标」那一副，与 [[dpo]] 内生化的「锚」凑齐同一散度贯穿
+闭环三环——「统一数学框架」薄弱点要的正是这种跨环节动作：不是记住三个 KL，而是认出它们
+是一个 `KL(q‖p)` 在不同工位换岗。
 
 ## ECE 与「聚合抹掉少数信号」同构
 
@@ -159,3 +173,4 @@ proper scoring rule
 
 - [[2026-07-30-calibration-vs-ranking]] — 区分/校准/决策效用三分，AUC 单调不变只测排序，NLL/Brier/ECE 各问什么
 - [[2026-07-31-proper-scoring-rules-honest-probabilities]] — proper scoring rule 的激励相容，Brier/log 的 excess risk 分解，MLE/NLL/交叉熵/KL 同源
+- [[2026-07-13-infonce-vs-kl]] — 蒸馏/构造端的 KL：InfoNCE=目标为 one-hot 的 KL、蒸馏=目标为软分布的 KL，为本页评测端的「尺」补上「目标」那一副面孔，与 [[dpo]] 的「锚」凑齐 KL 三副面孔
