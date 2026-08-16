@@ -1,7 +1,7 @@
 ---
 title: Self-RAG — 自我反思检索增强生成
 created: 2026-05-10
-updated: 2026-08-06
+updated: 2026-08-16
 type: concept
 tags: [retrieval, generation, agent]
 sources: [raw/papers/2310.11511-Self-RAG-Learning-to-Retrieve-Generate-and-Critique-through-Self-Reflection.html, raw/papers/2401.15884-Corrective-Retrieval-Augmented-Generation.html]
@@ -121,8 +121,26 @@ Retrieve / ISREL / ISSUP / ISUSE 各问不同的事、各对应不同的补救�
 
 Agentic RAG 的本质不是「多调几次搜索」，而是**让检索质量影响控制流**——检索被降格为一个带质检与回退路径的可决策动作，评分只有真正改变后续动作时才有价值。
 
+## 交叉：同一副「便宜提议 + 核验」骨架，为什么投机解码是无损的、而 Self-RAG 不是（07-23 × 07-26 反哺）
+
+把上面的控制流再抬一层，会撞见另一个子系统里一模一样的形状。[[2026-07-23-speculative-decoding-latency|投机解码]]的结构是：便宜的 draft 模型先串行猜 k 个候选，昂贵的 target 模型在一次前向里并行核验、接受最长正确前缀、在首个拒绝处纠正。Self-RAG/CRAG 的结构是：便宜的 retriever 先提出候选证据，一个 verifier（CRAG evaluator / Self-RAG ISSUP）核验它能不能支持即将写出的 claim、不合格就丢弃/补检/改写。**两者是同一副「让一个不可靠但便宜的提议器跑在前面，用一个核验器兜住质量」骨架**——提议器只决定速度与覆盖面，核验器才决定最终保证。这正是本页「保险丝」框架与 [[llm-inference-serving]] 延迟账的合流：一个把保险丝放在 decode 轮次上（拦「draft 猜错」），一个放在证据边界上（拦「答案越过证据」）。
+
+但把两者并排，最有信息量的是它们**不**同构的那一处——核验器的性质天差地别：
+
+```text
+              提议器(便宜/不可靠)     核验器            最终保证
+投机解码       draft 模型猜 token      target 一次并行验  精确：拒绝采样从残差
+                                                        max(0,p−q) 重采，输出
+                                                        严格服从 p —— 无损
+Self-RAG/CRAG  retriever 召回证据      ISSUP/evaluator   概率：核验器自己是个
+                                       打分              会错的学习判据，无硬保证
+```
+
+投机解码的核验器是一条**可证明正确**的接受-拒绝规则（呼应 [[dpo]]/[[probability-calibration]] 那副 KL 骨架：接受率 α 本质是 draft 分布 q 与 target 分布 p 的失配代价，失配越大存活前缀越短），所以它能把「便宜提议」的全部风险都吸收掉、输出分布一个 bit 都不偏。Self-RAG 的核验器却是它自己训练出来的一个 ISSUP 判据——它会漏判、会被表面相关性骗，于是「证据支持」这件事没有硬保证，只是把幻觉概率压低。**这条分界线正是本库反复出现的那个问题**：核验器一旦从「可执行的精确规则」退化成「一个会被优化的学习判据」，就回到 [[benchmark-evaluation]] 的 Goodhart 脊——谁来核验核验器？（也正是 pending 的【RLVR/GRPO】pick 的题眼：可验证域里 verifier 是 0/1 硬事实、退回投机解码那一侧的「精确核验」，开放生成里 verifier 是 judge、落在 Self-RAG 这一侧的「概率核验」。）一句话收口：**propose-verify 是通用的可靠性模式，但你拿到的是无损保证还是概率保证，全看那个核验器是「规则」还是「模型」。**
+
 ## 相关概念
 
+- [[llm-inference-serving]] — 投机解码是同一副 propose-verify 骨架在推理延迟账上的落点（精确核验器一端）
 - [[retrieval-augmented-generation]] — Self-RAG 的基础框架
 - [[react-agent]] — 类似的反思循环思想；07-20 误差复合是本页「保险丝」框架的上游诊断
 - [[context-engineering]] — 故障域设计/错误保险丝那根轴，Self-RAG/CRAG 是它在检索环的两处落点

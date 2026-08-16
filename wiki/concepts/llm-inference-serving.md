@@ -1,7 +1,7 @@
 ---
 title: LLM 推理服务优化——显存/延迟/吞吐三本账
 created: 2026-07-24
-updated: 2026-08-02
+updated: 2026-08-16
 type: concept
 tags: [inference, optimization, infra, llm]
 sources: []
@@ -90,6 +90,7 @@ memory capacity  ×  iterations per request  ×  useful slots per iteration
 - [[scaling-laws]] — 训练侧的算力分配账，与推理侧成本账对照
 - [[context-engineering]] — 「容量有限时何时释放、由谁补位」在 Agent 上下文侧的同构问题（batch slot ↔ context window）
 - [[react-agent]] — 上同构的另一端：iteration-level eviction ↔ 记忆环 compaction
+- [[self-rag]] — 投机解码的「便宜提议 + 核验」骨架在检索控制流的同构（精确核验器 vs 概率核验器）
 
 ## 伴读来源
 

@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-08-15
+> 最后更新：2026-08-16
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -30,7 +30,7 @@
   [[probability-calibration]] 本身——该页此前只写「锚+尺」两副面孔、且从未反链 07-13 [[2026-07-13-infonce-vs-kl]]，
   现补上「目标」（蒸馏/构造端 InfoNCE=one-hot KL、KD=软分布 KL 主动最小化）那一副，把同一个 KL(q‖p) 在闭环三工位换岗
   写进本就统摄 MLE/NLL/CE/KL/properness 的这页、并为 pending 的【交叉·KL 三副面孔】pick 从校准侧垫好概念层，新增链接支持该薄弱点仍活跃）
-- **端到端闭环**（最后确认：2026-08-12）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
+- **端到端闭环**（最后确认：2026-08-16）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
   这条链怎么连通、每一环的偏差如何传导（07-25 伴读把「过早聚合抹掉少数信号」在编码端与评测端打通、
   评测偏差经选模反向注入数据环——已聚成 [[benchmark-evaluation]]；07-26 把检索端也接上——
   SPLADE 词表维/[[colbert-retrieval|ColBERT]] MaxSim 是「拒绝过早聚合」在召回环的同构修法；
@@ -53,7 +53,11 @@
   08-12 反哺再把这几处散落的错位收成一根显式脊——[[benchmark-evaluation]]（自 07-31 零更新的评测枢纽页）新增「Goodhart 不是评测专属」一节，
   把 Goodhart/reward overoptimization/SPLADE FLOPS 错位/语料污染抽象成同一副「真目标 T 昂贵不可观测→各站改优化可测代理 S→压力足够则 S↑/T↓」骨架在闭环四站（数据·预训练/后训练/检索/评测）的四身衣服，
   点明评测端只是最后一站读数、危险在于它把前几站错位聚合成一个上线决策写回数据环，防御在四站同构＝周期性回锚 T（隐藏 holdout/gold reward/真实 P99/下游离线集），
-  首链 [[2026-07-18-dpo-kto-grpo-family]]/[[2026-07-19-splade-mlm-head-term-scoring]] 两处训练站代理错位，新增链接支持该薄弱点仍活跃）
+  首链 [[2026-07-18-dpo-kto-grpo-family]]/[[2026-07-19-splade-mlm-head-term-scoring]] 两处训练站代理错位；
+  08-16 反哺再把「便宜提议+核验」这副可靠性骨架跨子系统接通——[[self-rag]] 首链 07-23 投机解码，
+  点明 Self-RAG/CRAG 的 retriever→verifier 与投机解码的 draft→target 是同一副 propose-verify 骨架、
+  分界只在核验器是「精确规则」（投机解码拒绝采样无损）还是「会被优化的学习判据」（ISSUP 只压概率、退回 [[benchmark-evaluation]] 的谁核验核验器），
+  self-rag↔[[llm-inference-serving]] 两个此前未交叉的子系统首次接通，新增链接支持该薄弱点仍活跃）
 - **retrieval 以外的空缺**（最后确认：2026-08-10）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、
