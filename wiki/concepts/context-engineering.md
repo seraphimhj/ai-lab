@@ -1,7 +1,7 @@
 ---
 title: 上下文工程（Context Engineering）
 created: 2026-05-14
-updated: 2026-08-03
+updated: 2026-08-17
 type: concept
 tags: [agentic, reasoning, tutorial]
 sources: [raw/articles/llm-agent-core-principles-2026.md]
@@ -87,6 +87,17 @@ compaction   <-> log compaction / checkpoint
 ```
 
 分布式系统不假设机器永不宕机，而是设计超时、重试、幂等、隔离舱、检查点与恢复。上下文工程同样不该假设模型永不误读——**可靠性不来自某个组件绝不犯错，而来自错误发生后不被无限放大、且系统能从中恢复**。这正是上一节 observability / diagnosability / recoverability 三变量的上位表达：三者是「错误留没留信号、能不能定位到层、定位后能不能回退」。
+
+### 把 compaction 这道保险丝落到生产实现：它自己也是一段有状态、会过期的缓存
+
+上面把 compaction 讲成一道抽象保险丝（切「噪声纵向累积」、代价是「摘要漂移、漏约束」）。一份生产级 coding agent（Grok Build）的两阶段 compaction 给这道保险丝补了一层平时被略过的真相——**保险丝本身也是一个组件，也会故障、也需要它自己的保险丝**。[[2026-07-26-grok-build-architecture]]
+
+它的机制拆成两趟，恰好对上表里 compaction 那一行的两个空缺：
+
+- **Pass 1（prefire，异步预烧）**：在 token 逼近阈值前留一段提前量（default_lead≈10%）就在后台先把历史前缀摘成 NOTE₁；真正触发 compaction 时只需把 NOTE₁ 拼上最近尾部再摘一次。这把「压缩」从一次**同步卡顿**改成大部分工作提前摊掉——对应「恢复路径不能自己变成新的停顿源」，并另配 `wall_clock_budget`（默认 300s）兜住 reasoning 模型摘要跑飞，正是 recoverability 落到 compaction 自身。
+- **Pass 2（tail）+ 指纹失效**：`fingerprint_prefix()` 对前缀 item 的类型+文本做 hash，一旦历史被 rewind / branch / 编辑，指纹变了就丢弃 NOTE₁ 重摘。
+
+第二点才是给全页添的新洞见：**预烧出来的 NOTE₁ 是一份缓存，而缓存最危险的失效模式不是「摘错」而是「摘的是一段后来被改写掉的历史」**——这正是上表 external-memory 行里「过期错误被永久化」那类故障，如今在 compaction 内部复发。于是同一副[[2026-07-25-aggregation-erases-minority-signals|拒绝把「未验证」聚合成「已确认」]]的骨架又多一层：不仅摘要时别把猜测压成事实，缓存的摘要在底层事实被 rewind 后还得能**自证过期**。指纹失效＝把「durable state 的失效规则」（上表 external-memory 那行的验证方式：来源/时间/作用域/覆盖失效）搬进 compaction——一道保险丝要可靠，得先假设它自己会指向一段不再成立的世界。
 
 据此可以把本页开头的定义再抬一层：
 
