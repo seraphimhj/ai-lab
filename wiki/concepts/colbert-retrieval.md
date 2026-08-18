@@ -1,7 +1,7 @@
 ---
 title: ColBERT — Late Interaction 检索
 created: 2026-05-10
-updated: 2026-07-24
+updated: 2026-08-18
 type: concept
 tags: [retrieval, embedding, efficiency]
 sources: [raw/papers/2004.12832-ColBERT-Efficient-and-Effective-Passage-Search-via-Contextualized-Late-Interacti.html]
@@ -115,6 +115,25 @@ MUVERA  = 为这种多向量打分函数设计的检索算法 / 代理索引
 
 典型管线：`ColBERT query token vectors → Fq(Q) → MIPS 粗召回 Top-K → 原 ColBERT MaxSim 重排 →（可选）cross-encoder / LLM`。这和数据库查询优化的 **late materialization（延迟物化）** 是同一个形状：过早把多列拼成完整记录，后续简单但搬运大量无用数据；保留分列到真正需要组合时再物化，保住选择性但执行器更复杂。MUVERA 像中间加了一份「物化视图」——不恢复所有交互，只预计算一个适合候选检索的代理结构。
 
+## 交叉：retrieve-then-rerank 是第三副「便宜提议 + 核验」骨架，但它的漏检不可挽回（07-24 × 07-23 反哺）
+
+把上面的 `FDE MIPS 粗召回 → MaxSim 重排` 管线抬一层，它和 [[self-rag]] 里刚接通的那副骨架是同一个形状——[[2026-07-23-speculative-decoding-latency|投机解码]]的 `draft 猜 k 个 → target 一次并行验`、Self-RAG/CRAG 的 `retriever 提证据 → verifier 核验`、以及这里的 `FDE 单向量粗召回 → 多向量 MaxSim 精排`，都是**让一个便宜、有损、宽覆盖的提议器跑在前面，用一个昂贵、精确、窄作用的核验器兜住质量**。提议器决定速度与覆盖面，核验器决定最终排序——[[llm-inference-serving]] 的延迟账、检索控制流、召回打分链，三个此前分开的子系统在这副 propose-verify 骨架下合流。
+
+但把三者并排，最有信息量的是投机解码不共享、而检索独有的那一处失配——**提议器的漏检能不能被核验器挽回**：
+
+```text
+                 提议器漏检时           核验器能否回到源头        成败指标
+投机解码          draft 猜错 token       能：拒绝即从 target 残差重采   无损（输出≡target 分布）
+                                          → 提议器只封顶「速度」，
+                                            永远不封顶「正确性/覆盖」
+MUVERA/rerank    好文档没进 Top-K        不能：MaxSim 只能重排           recall@K（好文档有没有
+                                          已召回的候选，回不到全库          进候选集），不是代理分数误差
+Self-RAG/CRAG    retriever 漏掉证据      看设计：ISSUP 只在召回集内判，   命中率 + 是否触发补检
+                                          CRAG 的「网络补检」三态才是回源头
+```
+
+这条轴解释了本页上文那句「MUVERA 的成败要看 recall@K、而非代理分数的绝对误差」**为什么**成立：投机解码的核验器能回到 target 分布这个源头，所以提议器（draft）再烂也只损速度、不损正确；而 retrieve-then-rerank 的核验器（MaxSim）只在 FDE 已经召回的 Top-K 内部重排，**回不到全库**——一篇好文档在粗召回阶段被 FDE 的近似碰撞误差刷掉，精排阶段永远没机会看见它，于是提议器的 recall 就是整条管线精度的天花板，核验器只能在天花板下把 precision 做满。同一副骨架，核验器**能否回源头**这一个属性，就把「提议器只封顶速度」和「提议器封顶整条链的召回上限」两种系统分到了两边。也正因如此，CRAG 相对 Self-RAG 的真正增量不是更强的判据，而是那个「网络补检」三态——它是检索侧唯一的**回源头**通道，把 retrieve-rerank 从「漏检即永久丢失」拉回投机解码那种「漏检可挽回」的一侧（代价是引入一个新的、更宽的外部源头）。收口一句：**propose-verify 里核验器是「规则还是模型」决定你拿到无损还是概率保证（见 [[self-rag]]），而核验器「能否回到源头」决定提议器的漏检是封顶速度还是封顶召回。**
+
 ## ColBERTv2 改进
 
 - 使用 ResNet 风格的压缩层降低维度
@@ -136,8 +155,10 @@ MUVERA  = 为这种多向量打分函数设计的检索算法 / 代理索引
 - [[sparse-retrieval]] — SPLADE 词表维 exact-match，与 late interaction 同为补实体信号的一路
 - [[text-embedding]] — 单向量 mismatch 失败模式与三条修法，ColBERT 是其中一条
 - [[retrieval-augmented-generation]] — ColBERT 作为 RAG 检索器
-- [[self-rag]] — 结合反思机制的检索增强
+- [[self-rag]] — 同一副 propose-verify 骨架的检索控制流一端（核验器「规则 vs 模型」轴）；CRAG 的网络补检三态是检索侧唯一的「回源头」通道
+- [[llm-inference-serving]] — 投机解码 draft→target 是 propose-verify 的无损一端，其核验器能回到 target 分布这个源头
 
 ## 伴读来源
 
 - [[2026-07-24-late-interaction-muvera]] — 「交互推迟到哪一步」这根轴、MUVERA/FDE 的保相似度编译、与延迟物化的同构
+- [[2026-07-23-speculative-decoding-latency]] — retrieve-then-rerank × 投机解码同为 propose-verify 骨架，分界在核验器「能否回到源头」（漏检封顶速度还是封顶召回）

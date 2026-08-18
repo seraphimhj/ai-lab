@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-08-17
+> 最后更新：2026-08-18
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -30,7 +30,7 @@
   [[probability-calibration]] 本身——该页此前只写「锚+尺」两副面孔、且从未反链 07-13 [[2026-07-13-infonce-vs-kl]]，
   现补上「目标」（蒸馏/构造端 InfoNCE=one-hot KL、KD=软分布 KL 主动最小化）那一副，把同一个 KL(q‖p) 在闭环三工位换岗
   写进本就统摄 MLE/NLL/CE/KL/properness 的这页、并为 pending 的【交叉·KL 三副面孔】pick 从校准侧垫好概念层，新增链接支持该薄弱点仍活跃）
-- **端到端闭环**（最后确认：2026-08-17）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
+- **端到端闭环**（最后确认：2026-08-18）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
   这条链怎么连通、每一环的偏差如何传导（07-25 伴读把「过早聚合抹掉少数信号」在编码端与评测端打通、
   评测偏差经选模反向注入数据环——已聚成 [[benchmark-evaluation]]；07-26 把检索端也接上——
   SPLADE 词表维/[[colbert-retrieval|ColBERT]] MaxSim 是「拒绝过早聚合」在召回环的同构修法；
@@ -61,7 +61,11 @@
   08-17 反哺再把 compaction 这道保险丝从「抽象手段」落到生产实现——[[context-engineering]] 首链 07-26 Grok Build 审查，
   据两阶段 compaction（prefire 异步预烧 + fingerprint 失效）补出全页新洞见：这道保险丝本身是一段有状态、会过期的缓存，
   预烧摘要 NOTE₁ 的最危险失效不是「摘错」而是「摘的是一段被 rewind 掉的历史」＝external-memory 那行「过期错误被永久化」在 compaction 内部复发，
-  指纹失效＝把 durable-state 的失效规则搬进 compaction，同一副「拒绝把未验证聚合成已确认」骨架再添一层，新增链接支持该薄弱点仍活跃）
+  指纹失效＝把 durable-state 的失效规则搬进 compaction，同一副「拒绝把未验证聚合成已确认」骨架再添一层；
+  08-18 反哺再把 08-16 建起的 propose-verify 骨架从「投机解码×Self-RAG 两子系统」扩到第三个子系统·检索精排——[[colbert-retrieval]] 首链 07-23 投机解码，
+  点明 MUVERA 的 `FDE 粗召回→MaxSim 重排` 与 draft→target、retriever→verifier 同为「便宜有损提议器 + 昂贵精确核验器」，
+  并补出该骨架的第二根轴（自 08-16「核验器是规则还是模型→无损 vs 概率」之外）：**核验器能否回到源头**——投机解码拒绝即从 target 残差重采（提议器只封顶速度）、MaxSim 只能在已召回 Top-K 内重排回不到全库（提议器封顶 recall@K 天花板），
+  这正解释了 colbert 页早写下却未挂骨架的「MUVERA 成败看 recall@K 非代理分数误差」，并点明 CRAG 网络补检三态＝检索侧唯一的回源头通道，llm-inference-serving↔colbert 两子系统经此首次交叉，新增链接支持该薄弱点仍活跃）
 - **retrieval 以外的空缺**（最后确认：2026-08-10）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、
