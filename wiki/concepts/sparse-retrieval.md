@@ -1,7 +1,7 @@
 ---
 title: Sparse Retrieval
 created: 2026-05-14
-updated: 2026-08-09
+updated: 2026-08-19
 type: concept
 tags: [retrieval, embedding, nlp, rag]
 sources: [raw/papers/2109.10086-SPLADE-v2-Sparse-Lexical-and-Expansion-Model-for-Information-Retrieval.html]
@@ -116,6 +116,18 @@ FLOPS 正则把「少扫 posting list」写进训练，但线上真正决定延�
 
 **为什么稀疏分支能当身份锚，根子在一处「训练目标 vs 使用目标」的错位**：dense embedding 通常被对比学习训练去逼近 **semantic similarity**（两段话在不在谈相近的事），却被系统当 **retrieval relevance**（这段话答不答得了这个具体查询）来用——两个目标恰在实体敏感的查询上分道扬镳，于是"营收下降"的话题相似度盖过"哪家公司"的身份差异。这本质是一次**训练分布与使用分布的错位**（呼应 [[benchmark-evaluation]]「你的目标是从哪个分布定义的」）。稀疏 exact-match 没有这道错位：BM25 的词频统计压根不学「语义相似」这个会漂移的目标、SPLADE 的命中也锚在词表面形上，实体的字面在不在文档里是个可验证的硬事实、不靠一个可能训偏的语义方向来代理——这才是它对 dense「治本前先兜底」的结构性理由，而非简单的"匹配更准"。
 
+## 稀疏检索在 propose-verify 骨架里的位置：第一级提议器封顶整条链的召回
+
+上面「在 RAG 中的应用」把稀疏当混合检索的一条分支，说法是"两全其美"；但放到 [[colbert-retrieval]]/[[self-rag]]/[[llm-inference-serving]] 近期接通的那副 **propose-verify 骨架**上，才能看清稀疏检索到底占了哪个工位、以及"混合"为什么不是可选优化而是结构必需。
+
+生产检索几乎都是 `第一级召回 → 精排` 的级联：一个便宜、有损、宽覆盖的**提议器**先从全库捞出 Top-K 候选，一个昂贵、精确、窄作用的**核验器**（cross-encoder / [[colbert-retrieval|ColBERT]] MaxSim）在候选内部重排。这与 [[2026-07-23-speculative-decoding-latency|投机解码]]的 `draft 猜 → target 验`、Self-RAG 的 `retriever 提证据 → verifier 核验` 是同一个形状——**稀疏检索（BM25/SPLADE）正是这条级联里最常见的第一级提议器**（[[2026-07-24-late-interaction-muvera]] 把级联的召回天花板讲透，FDE 是提议器的另一种实现）。
+
+关键落在那副骨架的第二根轴——**核验器能否回到源头**（见 [[colbert-retrieval]]）：检索侧的核验器只在提议器已召回的 Top-K 内重排，**回不到全库**，所以提议器的 recall 就是整条管线精度的天花板，精排再强也只能在天花板下把 precision 做满。这把稀疏检索的意义从"精确匹配强"抬到一句更硬的话：**作为提议器，它漏掉的文档是永久丢失的**——SPLADE/BM25 的召回天花板由 vocabulary mismatch 划定（一篇只用释义、与查询无任何词面/扩展重叠的文档，压根进不了候选集）。
+
+而这恰好和 dense 提议器的天花板**互补**：[[dense-passage-retrieval|dense]] 的漏检来自上文那道 semantic-similarity↔retrieval-relevance 错位（实体敏感查询上把"哪家公司"漏成话题相似），稀疏的漏检来自词面不重叠。两种提议器在**不同的查询子集上触顶**。于是"混合检索（RRF）"的真正理由不是含糊的"两全其美"，而是骨架逼出来的：**核验器回不到源头 ⇒ 唯一能抬高天花板的办法是在 propose 阶段就并联两个盲区互补的提议器**，把各自会永久漏掉的那部分文档用对方补进候选集，再交给核验器精排。稀疏分支当身份锚、dense 分支当语义召回，本质是两台漏检模式正交的提议器求并集——先把 recall 天花板顶上去，precision 才有的做。
+
+（对照 [[self-rag]]：CRAG 的"网络补检"三态是检索侧唯一能真正**回到源头**的通道——它绕过已召回候选集去外部重新取证，等于给漏检开了一条挽回路；而纯 retrieve-rerank 没有这条路，只能靠提议器侧的混合把天花板一次性顶够高。）
+
 ## 与 [[text-embedding]] 的关系
 
 现代 embedding 模型如 BGE-M3 已内置多路检索能力：Dense + Sparse + ColBERT 三合一，模糊了稀疏/密集的边界。Qwen3-Embedding 同样支持稀疏向量输出。
@@ -126,3 +138,5 @@ FLOPS 正则把「少扫 posting list」写进训练，但线上真正决定延�
 - [[2026-07-19-splade-mlm-head-term-scoring]] — 一个词项权重的完整来历：`w_i=max_j log(1+ReLU(s_ij))` 三闸、为什么不是概率、FLOPS 正则如何造稀疏、FLOPS 代理↔真实延迟错位
 - [[2026-07-22-embedding-entity-mismatch]] — 实体 mismatch 三处修法（词表层 exact-match / late interaction / entity-aware 难负例）、semantic-similarity 与 retrieval-relevance 的训练-使用目标错位
 - [[2026-07-25-aggregation-erases-minority-signals]] — 「过早聚合抹掉少数信号」这根轴，稀疏词表维=给否决型信号留独立账目
+- [[2026-07-23-speculative-decoding-latency]] — propose-verify 骨架与「核验器能否回到源头」轴的来源，稀疏检索=检索级联里的第一级提议器、漏检永久丢失
+- [[2026-07-24-late-interaction-muvera]] — 检索级联的召回天花板（提议器 recall@K 封顶精度），混合检索=并联盲区互补的两台提议器把天花板顶上去

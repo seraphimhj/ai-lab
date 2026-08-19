@@ -30,7 +30,7 @@
   [[probability-calibration]] 本身——该页此前只写「锚+尺」两副面孔、且从未反链 07-13 [[2026-07-13-infonce-vs-kl]]，
   现补上「目标」（蒸馏/构造端 InfoNCE=one-hot KL、KD=软分布 KL 主动最小化）那一副，把同一个 KL(q‖p) 在闭环三工位换岗
   写进本就统摄 MLE/NLL/CE/KL/properness 的这页、并为 pending 的【交叉·KL 三副面孔】pick 从校准侧垫好概念层，新增链接支持该薄弱点仍活跃）
-- **端到端闭环**（最后确认：2026-08-18）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
+- **端到端闭环**（最后确认：2026-08-19）：数据 → 采样 → 目标函数 → 评测 → 线上分布，
   这条链怎么连通、每一环的偏差如何传导（07-25 伴读把「过早聚合抹掉少数信号」在编码端与评测端打通、
   评测偏差经选模反向注入数据环——已聚成 [[benchmark-evaluation]]；07-26 把检索端也接上——
   SPLADE 词表维/[[colbert-retrieval|ColBERT]] MaxSim 是「拒绝过早聚合」在召回环的同构修法；
@@ -65,7 +65,9 @@
   08-18 反哺再把 08-16 建起的 propose-verify 骨架从「投机解码×Self-RAG 两子系统」扩到第三个子系统·检索精排——[[colbert-retrieval]] 首链 07-23 投机解码，
   点明 MUVERA 的 `FDE 粗召回→MaxSim 重排` 与 draft→target、retriever→verifier 同为「便宜有损提议器 + 昂贵精确核验器」，
   并补出该骨架的第二根轴（自 08-16「核验器是规则还是模型→无损 vs 概率」之外）：**核验器能否回到源头**——投机解码拒绝即从 target 残差重采（提议器只封顶速度）、MaxSim 只能在已召回 Top-K 内重排回不到全库（提议器封顶 recall@K 天花板），
-  这正解释了 colbert 页早写下却未挂骨架的「MUVERA 成败看 recall@K 非代理分数误差」，并点明 CRAG 网络补检三态＝检索侧唯一的回源头通道，llm-inference-serving↔colbert 两子系统经此首次交叉，新增链接支持该薄弱点仍活跃）
+  这正解释了 colbert 页早写下却未挂骨架的「MUVERA 成败看 recall@K 非代理分数误差」，并点明 CRAG 网络补检三态＝检索侧唯一的回源头通道，llm-inference-serving↔colbert 两子系统经此首次交叉；
+  08-19 反哺再把这副 propose-verify 骨架补上检索级联最上游一站——[[sparse-retrieval]] 首链 07-23 投机解码/07-24 late-interaction，点明 SPLADE/BM25＝级联里最常见的第一级提议器，且因核验器回不到全库，提议器漏检永久丢失、其 recall 天花板＝整条链精度上限；
+  由此把本页原本含糊的「混合检索＝两全其美」重接成骨架必需——稀疏（漏检来自 vocabulary mismatch）与 dense（漏检来自 semantic↔relevance 错位）是两台盲区正交的提议器，RRF 并联＝在 propose 阶段把召回天花板一次性顶够高（因核验器无法回源头挽回），新增链接支持该薄弱点仍活跃）
 - **retrieval 以外的空缺**（最后确认：2026-08-10）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、
