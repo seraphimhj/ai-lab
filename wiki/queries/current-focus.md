@@ -1,7 +1,7 @@
 # 当前主线（Current Focus）
 
 > 供 hermes 每日选片、Claude 挖掘薄弱点、每周分诊使用。每周日复盘时更新。
-> 最后更新：2026-08-18
+> 最后更新：2026-08-20
 
 ## 主线方向（推送内容优先落在这三个圈内）
 
@@ -67,7 +67,10 @@
   并补出该骨架的第二根轴（自 08-16「核验器是规则还是模型→无损 vs 概率」之外）：**核验器能否回到源头**——投机解码拒绝即从 target 残差重采（提议器只封顶速度）、MaxSim 只能在已召回 Top-K 内重排回不到全库（提议器封顶 recall@K 天花板），
   这正解释了 colbert 页早写下却未挂骨架的「MUVERA 成败看 recall@K 非代理分数误差」，并点明 CRAG 网络补检三态＝检索侧唯一的回源头通道，llm-inference-serving↔colbert 两子系统经此首次交叉；
   08-19 反哺再把这副 propose-verify 骨架补上检索级联最上游一站——[[sparse-retrieval]] 首链 07-23 投机解码/07-24 late-interaction，点明 SPLADE/BM25＝级联里最常见的第一级提议器，且因核验器回不到全库，提议器漏检永久丢失、其 recall 天花板＝整条链精度上限；
-  由此把本页原本含糊的「混合检索＝两全其美」重接成骨架必需——稀疏（漏检来自 vocabulary mismatch）与 dense（漏检来自 semantic↔relevance 错位）是两台盲区正交的提议器，RRF 并联＝在 propose 阶段把召回天花板一次性顶够高（因核验器无法回源头挽回），新增链接支持该薄弱点仍活跃）
+  由此把本页原本含糊的「混合检索＝两全其美」重接成骨架必需——稀疏（漏检来自 vocabulary mismatch）与 dense（漏检来自 semantic↔relevance 错位）是两台盲区正交的提议器，RRF 并联＝在 propose 阶段把召回天花板一次性顶够高（因核验器无法回源头挽回）；
+  08-20 反哺再把这副 propose-verify 骨架推到它的边界一格——[[mixture-of-experts]] 首链 07-23 投机解码，点明 MoE 的 router 是一个 top-k 提议器却**在推理链上根本没有下游核验器**（token 被路由/加权合并直接成层输出，推理时既测不出也挽不回错路由），
+  由此把 08-16/08-18 立起的两根轴推到极限并补出第三层「核验器的有无决定防御压在推理侧还是训练侧」——投机解码把风险交给推理时的精确核验、MoE 把风险交给训练时的负载均衡（auxiliary loss/capacity factor 不是修某次坏路由而是训练时压低系统性坍缩概率），
+  这正解释了本页 07-29 终局问题「路由错了算检索失败/容量不足/目标错配」之难＝核验器缺席的结构后果，llm-inference-serving/self-rag/colbert↔mixture-of-experts 经此把 propose-verify 骨架接到预训练架构侧，新增链接支持该薄弱点仍活跃）
 - **retrieval 以外的空缺**（最后确认：2026-08-10）：大模型预训练（数据配比、scaling、MoE 容量账）、
   后训练（对齐方法演进）、推理系统（serving、KV cache、投机解码、吞吐/batching——已聚成 [[llm-inference-serving]]）
   （08-01 反哺把 07-29 MoE 伴读接进 [[mixture-of-experts]]——N_total/N_active 解耦、两笔账、

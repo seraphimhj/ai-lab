@@ -1,7 +1,7 @@
 ---
 title: Mixture of Experts — 稀疏专家混合
 created: 2026-05-10
-updated: 2026-08-01
+updated: 2026-08-20
 type: concept
 tags: [architecture, efficiency, scaling]
 sources: [raw/papers/2401.04088-Mixtral-of-Experts.html]
@@ -106,6 +106,24 @@ RAG：先检索少数文档，再执行上下文计算
 
 二者都用「选择少数资源」扩大可用容量，也共享同一族失败模式：**路由/检索错了，后面算得再准也白算；路由太集中则热门资源拥堵；候选全集虽不参与本次计算，却仍要被存储和索引**（专家权重驻留 ↔ 文档索引常驻）。差别只是 MoE 路由的是内部参数、[[retrieval-augmented-generation|RAG]] 路由的是外部知识。这个同构给出一条评测提醒：router 不该只看最终 loss，还要单独看**选择质量、负载分布、失败切片**——与 [[benchmark-evaluation]] 「别用整体均值掩盖关键子集」同构。
 
+### 交叉：router 是一副只有「提议」没有「核验」的骨架——所以可靠性被逼到训练侧
+
+上面把 router 接到 RAG 的「选择少数资源」同构；再往前一步，它其实落在本库 08-16→08-19 反复出现的 **propose-verify（便宜提议 + 核验）** 可靠性骨架上，却是这副骨架里最特殊的一格——**核验器缺席**。
+
+先回忆这副骨架已入库的三个实例，都是「不可靠但便宜的提议器跑在前、一个核验器兜住最终质量」：
+
+```text
+投机解码       draft 模型  ──▶ target 拒绝采样核验（精确规则·无损·可从残差回源重采）
+Self-RAG/CRAG  retriever   ──▶ ISSUP/evaluator 核验（学习判据·概率·CRAG 可网络补检回源）
+ColBERT/MUVERA FDE 粗召回  ──▶ MaxSim 精排核验（精确规则·但只能在 Top-K 内、回不到全库）
+```
+
+[[2026-07-23-speculative-decoding-latency|投机解码]]那条把这副骨架立起来时给了两根轴：① 核验器是**规则还是模型**（决定无损还是概率保证）；② 核验器**能否回到源头**（决定提议器的漏检是封顶速度还是封顶召回，见 [[colbert-retrieval]]）。MoE 的 router 把这两根轴推到极限——**它是一个 top-k 提议器，但推理链上根本没有下游核验器**：token 被路由、被 top-k 专家加权合并、直接成为该层输出，没有任何一步在推理时检验「这个 token 是不是被送错了专家」，更没有「送错了退回重路由」的通道。这正是本页 07-29 终局问题「路由错了该算检索失败、容量不足还是目标错配」之所以难的结构原因：**核验器缺席，路由错误在推理时既测不出、也挽不回**。
+
+于是可靠性的落点被整体前移：既然推理侧无法「核验」，防御只能全部压到**训练侧**——auxiliary load-balancing loss 与 capacity factor 不是在修某一次坏路由，而是在训练时就把「router 会不会系统性坍缩到少数专家」这类失败概率压低。对照 [[colbert-retrieval]] 的第二根轴：MaxSim 的漏检还能靠「把 recall@K 天花板顶高」在提议阶段补救、CRAG 还能网络补检回源，而 MoE 的错路由连提议阶段的天花板都补救不了——**没有核验器，就只剩「在提议器出厂前把它调好」这一条路**。这也反过来解释了为什么 MoE 的工程重心压在负载均衡与专家利用率、而非某种「路由后校验」机制：那本该由核验器承担的活，在这副骨架里无处安放，只能回填进训练目标。
+
+一句话收口：propose-verify 骨架里，**核验器的强弱决定保证的强弱（[[self-rag]] 的概率 vs 投机解码的无损），核验器的有无决定防御压在推理侧还是训练侧**——投机解码把风险交给推理时的精确核验，MoE 把风险交给训练时的负载均衡，因为它这一格的核验器根本不存在。
+
 ### 它怎么改写 Chinchilla 的账本
 
 Dense scaling 里 `训练算力 ∝ N·D`，N 是单一数字；MoE 里 N 裂开后账本变成：训练 FLOPs 主要跟 `N_active·D` 走、权重显存/检查点跟 `N_total` 走、通信开销跟专家布局/top-k/batch 走、模型质量四者共同决定。于是最优分配从 07-16 [[scaling-laws|Chinchilla]] 的「N vs D」二变量问题升级成 `{D, N_active, N_total, 路由/通信可承受度 H}` 四变量问题。**别把它简化成「把 Chinchilla 的 N 换成 N_active」**——那会漏掉总容量对 loss 的贡献，也漏掉路由与通信。
@@ -120,7 +138,10 @@ Dense scaling 里 `训练算力 ∝ N·D`，N 是单一数字；MoE 里 N 裂开
 - [[llm-inference-serving]] — MoE serving 的显存/通信账与 continuous batching 联合调度
 - [[retrieval-augmented-generation]] — router 路由参数 ↔ RAG 检索文档，同构的「选择少数资源」及其失败模式
 - [[benchmark-evaluation]] — router 评测别只看总 loss，要看负载分布与失败切片
+- [[colbert-retrieval]] — propose-verify 骨架第二根轴「核验器能否回源」，与 router「无核验器」的对照
+- [[self-rag]] — propose-verify 骨架的概率核验一格，router 是同骨架里核验器缺席的一格
 
 ## 伴读来源
 
 - [[2026-07-29-moe-capacity-compute-routing]] — 一条收益两笔账、N_total/N_active 解耦、MoE↔RAG 同构、四变量 scaling 账本
+- [[2026-07-23-speculative-decoding-latency]] — propose-verify 骨架锚点；本页据其两根轴反证 router 是「无下游核验器」的提议器、可靠性因此前移到训练侧
