@@ -86,33 +86,34 @@
 
 ## 6. 伴读推荐闭环（hermes × Claude）
 
-三个文件承载闭环，全在 `queries/`，git 双机同步：
+四个文件承载闭环，全在 `queries/`，git 双机同步：
 
 | 文件 | 谁写 | 谁读 |
 |---|---|---|
 | `current-focus.md` | 我 + Claude（挖掘后更新薄弱点） | hermes 兜底选片 |
 | `companion-log.md` | hermes（每日推送记录 + 回收反馈） | Claude 挖掘薄弱点 |
 | `picks.md` | Claude（本地/工作机写选片队列） | hermes 优先消费 |
+| `reading-queue.md` | hermes（历史存量与在途文章状态） | hermes + Claude 门禁 |
 
-- **推进门禁（最高优先级，一次只允许一篇在途）**：检查 `companion-log.md`
-  最近一篇已推送文章所在日期段。只有该段已经记录用户明确回复“已读”，或留下了
-  针对该篇文章的评论/追问/理解反馈，才允许生成、消费或推送下一篇。没有这些反馈时，
-  Hermes 和 Claude 都必须停在原地：不消费 picks、不生成新文章、不新增 note、
-  不补充新 picks。不能用 wiki 连接度、浏览记录、时间过去多久或“无反馈”占位替代用户反馈。
+- **推进门禁（最高优先级，一次只允许一篇在途）**：`reading-queue.md` 第一条未勾选项
+  就是当前在途文章。每天 9:00 都发送它的既有 note 全文；如果尚未收到用户明确“已读”，
+  或针对该篇的评论/追问/理解反馈，次日继续重发同一篇。收到反馈后才勾选并推进下一条。
+  队列未清空时，Hermes 不消费 picks、不生成新文章；Claude 不补 picks、不生成或反哺文章。
+  不能用 wiki 连接度、浏览记录、时间过去多久或“无反馈”占位替代用户反馈。
 - **hermes 每日 9:00**：git pull → 若远端有 `mining/*` 兜底分支
   （云端挖掘推 main 失败时的落点），先 merge 进 main、删除该分支再继续 →
-  补漏昨夜 23:30 后的反馈 → **检查推进门禁**。门禁未通过则当天不生成、
-  不落盘、不推送后续文章，只返回一行暂停提示；门禁通过后才优先消费 picks 队列，
-  空则按 current-focus 规则自选 → ljg-read 伴读推送 → 伴读全文存 `notes/`、
-  companion-log 记一行索引 → git push。薄弱点还在可换角度继续，但仍受一篇一反馈门禁约束。
+  补漏昨夜 23:30 后的反馈 → 读取 `reading-queue.md`。若当前在途文章已有反馈，先勾选；
+  然后发送新的第一条未勾选历史 note；若它尚未反馈则每天重发同一篇。只有队列清空后，
+  才优先消费 picks，空则按 current-focus 自选并生成一篇新 note，同时追加为新的未勾选队列项。
+  一次运行最多推进/发送一篇。
 - **hermes 每晚 23:30（夜间反馈回收）**：把当天你回给 hermes 的反馈提炼进
   companion-log 并推送——这样次日 4:00 的云端挖掘就能读到当天反馈，
   反馈生效周期从两天缩到一天内。23:30 后才回的反馈由次日 9:00 补漏。
 - **Claude 挖掘（每日 4:00 云端 routine「每日选片挖掘」自动运行，
   避开 hermes 9:00 前后的 companion-log 推送竞争窗口；
   管理入口 claude.ai/code/routines；深度挖掘仍可随时人工发起）**：
-  先检查同一推进门禁；最近一篇没有“已读”或针对该篇的评论时，本次 routine
-  必须 no-op，不更新 current-focus、不补 picks、不生成或反哺任何文章。门禁通过后才
+  先检查 `reading-queue.md`；只要还有未勾选项，本次 routine 必须 no-op，
+  不更新 current-focus、不补 picks、不生成或反哺任何文章。队列清空后才
   读 companion-log + 近期 wiki 活动 →
   更新 current-focus 薄弱点 → 往 picks 补 3-5 条选片 →
   把上周反馈积极（"已懂"/有追问深挖）的伴读笔记提炼进 `concepts/`，
