@@ -1,7 +1,9 @@
 # 选片队列（Picks）
 
 > Claude（本地/工作机）基于 companion-log 和 current-focus 挖掘后写入。
-> hermes 每日取第一条 pending 伴读推送，推送后把状态改为 pushed。
+> **门禁：最近一篇已推送文章没有用户明确“已读”或针对该篇的评论/追问时，
+> Claude 不得补充新 picks，Hermes 也不得消费 pending、生成或推送下一篇。**
+> 门禁通过后，Hermes 才取第一条 pending 伴读推送，并把状态改为 pushed。
 
 <!-- 每条格式：
 - [ ] 材料/主题 | 命中薄弱点：xxx | 切入角度：一句话

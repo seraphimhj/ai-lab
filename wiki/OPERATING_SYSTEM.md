@@ -94,18 +94,25 @@
 | `companion-log.md` | hermes（每日推送记录 + 回收反馈） | Claude 挖掘薄弱点 |
 | `picks.md` | Claude（本地/工作机写选片队列） | hermes 优先消费 |
 
+- **推进门禁（最高优先级，一次只允许一篇在途）**：检查 `companion-log.md`
+  最近一篇已推送文章所在日期段。只有该段已经记录用户明确回复“已读”，或留下了
+  针对该篇文章的评论/追问/理解反馈，才允许生成、消费或推送下一篇。没有这些反馈时，
+  Hermes 和 Claude 都必须停在原地：不消费 picks、不生成新文章、不新增 note、
+  不补充新 picks。不能用 wiki 连接度、浏览记录、时间过去多久或“无反馈”占位替代用户反馈。
 - **hermes 每日 9:00**：git pull → 若远端有 `mining/*` 兜底分支
   （云端挖掘推 main 失败时的落点），先 merge 进 main、删除该分支再继续 →
-  补漏昨夜 23:30 后的反馈 →
-  优先消费 picks 队列，空则按 current-focus 规则自选 → ljg-read 伴读推送 →
-  伴读全文存 `notes/`、companion-log 记一行索引 → git push。
-  不去重：薄弱点还在就换角度继续推。
+  补漏昨夜 23:30 后的反馈 → **检查推进门禁**。门禁未通过则当天不生成、
+  不落盘、不推送后续文章，只返回一行暂停提示；门禁通过后才优先消费 picks 队列，
+  空则按 current-focus 规则自选 → ljg-read 伴读推送 → 伴读全文存 `notes/`、
+  companion-log 记一行索引 → git push。薄弱点还在可换角度继续，但仍受一篇一反馈门禁约束。
 - **hermes 每晚 23:30（夜间反馈回收）**：把当天你回给 hermes 的反馈提炼进
   companion-log 并推送——这样次日 4:00 的云端挖掘就能读到当天反馈，
   反馈生效周期从两天缩到一天内。23:30 后才回的反馈由次日 9:00 补漏。
 - **Claude 挖掘（每日 4:00 云端 routine「每日选片挖掘」自动运行，
   避开 hermes 9:00 前后的 companion-log 推送竞争窗口；
   管理入口 claude.ai/code/routines；深度挖掘仍可随时人工发起）**：
+  先检查同一推进门禁；最近一篇没有“已读”或针对该篇的评论时，本次 routine
+  必须 no-op，不更新 current-focus、不补 picks、不生成或反哺任何文章。门禁通过后才
   读 companion-log + 近期 wiki 活动 →
   更新 current-focus 薄弱点 → 往 picks 补 3-5 条选片 →
   把上周反馈积极（"已懂"/有追问深挖）的伴读笔记提炼进 `concepts/`，
@@ -134,7 +141,7 @@
 - **周一提醒**：附带 inbox 待分诊数与 picks 队列余量。队列由每日挖掘自动
   补满 5 条，余量 ≤2 说明云端 routine 可能停摆，去 claude.ai/code/routines 检查。
 - **反馈习惯（闭环命脉）**：读完伴读哪怕只回 hermes 一句话
-  （"懂了"/"哪步没跟上"）——反馈只从 hermes 会话回收，
+  （“已读”/“懂了”/“哪步没跟上”）——这也是解锁下一篇的唯一方式。反馈只从 hermes 会话回收，
   留在脑子里或说给别人的都不算。
 - **停摆检测**：连续 2 天没收到 9 点推送就跑 `hermes cron status`；
   `wiki_healthcheck.py` 会在 companion-log 静默 >2 天时报错。
